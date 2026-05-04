@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QScheduler AI — 量子最適化生産計画システム</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:        #070b18;
+      --bg-alt:    #0a0f1e;
+      --surface:   #0e1628;
+      --surface-2: #141d35;
+      --border:    rgba(78,120,220,0.15);
+      --border-b:  rgba(78,120,220,0.35);
+      --text:      #e8eeff;
+      --text-2:    #8b9cc8;
+      --text-3:    #4a5578;
+      --blue:      #4f9cf9;
+      --cyan:      #00d4ff;
+      --green:     #10b981;
+      --amber:     #f59e0b;
+      --red:       #ef4444;
+      --purple:    #9d5cf6;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,156,249,0.08) 0%, transparent 70%),
+        linear-gradient(rgba(78,120,220,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,120,220,0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    /* ── HEADER ─────────────────────────── */
+    .header {
+      background: rgba(7,11,24,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      height: 60px;
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 20px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px; color: var(--text);
+      white-space: nowrap; text-decoration: none;
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-sub {
+      font-size: 9px; color: var(--cyan);
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.12em; margin-top: 1px;
+    }
+    .nav-tabs { display: flex; gap: 2px; flex: 1; }
+    .nav-tab {
+      padding: 7px 16px; border-radius: 7px;
+      cursor: pointer; font-size: 13px; font-weight: 500;
+      color: var(--text-2); transition: all .2s;
+      border: 1px solid transparent; white-space: nowrap;
+    }
+    .nav-tab:hover { color: var(--text); background: var(--surface); }
+    .nav-tab.active {
+      color: var(--cyan);
+      background: rgba(0,212,255,0.08);
+      border-color: rgba(0,212,255,0.22);
+    }
+    .header-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+    .ai-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+      color: var(--green);
+    }
+    .ai-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100%{opacity:1;transform:scale(1);}
+      50%{opacity:.4;transform:scale(.8);}
+    }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+
+    /* ── LAYOUT ──────────────────────────── */
+    .main { padding-top: 60px; min-height: 100vh; }
+    .page { display: none; padding: 28px 28px 48px; max-width: 1440px; margin: 0 auto; }
+    .page.active { display: block; animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);} }
+
+    /* ── SECTION HEADER ──────────────────── */
+    .sec-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 24px;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .sec-title { font-size: 21px; font-weight: 800; color: var(--text); }
+    .sec-sub { font-size: 12px; color: var(--text-2); margin-top: 3px; }
+
+    /* ── KPI GRID ────────────────────────── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 22px; }
+    .kpi-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 20px 16px;
+      position: relative; overflow: hidden; transition: border-color .3s, transform .2s;
+    }
+    .kpi-card:hover { border-color: var(--border-b); transform: translateY(-2px); }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+    .kpi-card.blue::before  { background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+    .kpi-card.green::before { background: linear-gradient(90deg, var(--green), #34d399); }
+    .kpi-card.amber::before { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+    .kpi-card.purple::before{ background: linear-gradient(90deg, var(--purple), var(--blue)); }
+    .kpi-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-2); margin-bottom: 14px;
+    }
+    .kpi-val {
+      font-size: 34px; font-weight: 800;
+      font-family: 'IBM Plex Mono', monospace; line-height: 1; margin-bottom: 8px;
+    }
+    .kpi-card.blue  .kpi-val { color: var(--blue); }
+    .kpi-card.green .kpi-val { color: var(--green); }
+    .kpi-card.amber .kpi-val { color: var(--amber); }
+    .kpi-card.purple .kpi-val { color: var(--cyan); }
+    .kpi-trend { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
+    .up   { color: var(--green); }
+    .down { color: var(--red); }
+    .kpi-icon {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      font-size: 42px; opacity: .055; pointer-events: none;
+    }
+
+    /* ── CARDS ───────────────────────────── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px;
+    }
+    .chart-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .chart-title  { font-size: 14px; font-weight: 700; }
+    .badge {
+      font-size: 10px; font-family: 'IBM Plex Mono', monospace;
+      padding: 3px 8px; border-radius: 4px; font-weight: 600;
+    }
+    .badge-ai   { background: rgba(0,212,255,.1); color: var(--cyan); border: 1px solid rgba(0,212,255,.22); }
+    .badge-live { background: rgba(16,185,129,.1); color: var(--green); border: 1px solid rgba(16,185,129,.22); }
+
+    /* ── ALERTS ──────────────────────────── */
+    .alert-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+    }
+    .alert-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .adot {
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+    }
+    .adot.danger { background: var(--red); box-shadow: 0 0 6px var(--red); animation: pulse 1.5s infinite; }
+    .adot.warn   { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+    .adot.info   { background: var(--blue); }
+    .adot.ok     { background: var(--green); }
+    .a-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .a-desc  { font-size: 12px; color: var(--text-2); margin-top: 2px; line-height: 1.5; }
+    .a-time  { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-3); white-space: nowrap; }
+
+    /* ── BUTTONS ─────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; transition: all .2s; white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), #2979e8);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(79,156,249,.35); }
+    .btn-ghost {
+      background: var(--surface-2); color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-b); }
+    .btn-ai {
+      background: linear-gradient(135deg, #1e3a8a 0%, var(--purple) 100%);
+      color: #fff; position: relative; overflow: hidden;
+    }
+    .btn-ai::after {
+      content: ''; position: absolute; top: -50%; left: -60%;
+      width: 60%; height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+      animation: shimmer 2.5s infinite;
+    }
+    @keyframes shimmer {
+      0%  { left: -60%; }
+      100%{ left: 120%; }
+    }
+    .btn-ai:hover { transform: translateY(-1px); box-shadow: 0 4px 22px rgba(157,92,246,.4); }
+    .btn-ai:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* ── FORM CONTROLS ───────────────────── */
+    .form-select {
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 12px; border-radius: 8px;
+      font-size: 13px; font-family: 'Inter', sans-serif;
+      cursor: pointer; appearance: none; -webkit-appearance: none;
+    }
+    .form-select:focus { outline: none; border-color: var(--blue); }
+
+    /* ── AI LOADING INDICATOR ────────────── */
+    .ai-loading { display: none; align-items: center; gap: 8px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--cyan); }
+    .ai-loading.show { display: flex; }
+    .ai-spin {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(0,212,255,.2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── FORECAST PAGE ───────────────────── */
+    .fc-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+    .insight-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 20px; }
+    .insight-card {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+    }
+    .ins-icon  { font-size: 26px; margin-bottom: 10px; }
+    .ins-val   { font-size: 24px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; color: var(--cyan); margin-bottom: 4px; }
+    .ins-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .ins-desc  { font-size: 11px; color: var(--text-2); line-height: 1.6; }
+    .fc-meta   { font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--text-2); margin-left: auto; }
+
+    /* ── SCHEDULE PAGE ───────────────────── */
+    .eff-row  { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .eff-item {
+      flex: 1; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px;
+    }
+    .eff-item.wide { flex: 2; }
+    .eff-lbl  { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+    .eff-num  { font-size: 30px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+    .eff-before .eff-num { color: var(--amber); }
+    .eff-after  .eff-num { color: var(--text-3); }
+    .eff-after.done .eff-num { color: var(--green); }
+    .eff-bar  { height: 4px; border-radius: 2px; background: var(--border); margin-top: 10px; overflow: hidden; }
+    .eff-fill { height: 100%; border-radius: 2px; transition: width .9s cubic-bezier(.4,0,.2,1); }
+    .eff-before .eff-fill { background: var(--amber); }
+    .eff-after  .eff-fill { background: var(--green); }
+    .eff-arrow { font-size: 22px; color: var(--text-3); flex-shrink: 0; }
+
+    /* progress bar */
+    .optim-wrap { display: none; margin-bottom: 20px; }
+    .optim-wrap.show { display: block; }
+    .optim-bg { background: var(--surface-2); border: 1px solid var(--border); border-radius: 100px; height: 8px; overflow: hidden; }
+    .optim-fill {
+      height: 100%; width: 0%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--purple), var(--blue));
+      background-size: 300% 100%;
+      animation: grd 2s linear infinite;
+      transition: width .15s linear;
+    }
+    @keyframes grd { 0%{background-position:0%}100%{background-position:300%} }
+    .optim-lbl { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--cyan); margin-top: 6px; }
+
+    /* Gantt */
+    .gantt-wrap { overflow-x: auto; }
+    .gantt-days { display: flex; margin-left: 148px; margin-bottom: 8px; }
+    .g-day { flex: 1; min-width: 88px; text-align: center; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-3); font-weight: 500; }
+    .gantt-row { display: flex; align-items: center; margin-bottom: 10px; }
+    .g-lbl { width: 148px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--text-2); padding-right: 14px; }
+    .g-lbl small { display: block; font-size: 10px; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; font-weight: 400; margin-top: 1px; }
+    .g-track {
+      flex: 1; display: flex; height: 46px;
+      background: var(--surface-2); border-radius: 6px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .g-block {
+      height: 100%; display: flex; align-items: center;
+      padding: 0 10px; font-size: 11px; font-weight: 700;
+      white-space: nowrap; cursor: pointer; transition: filter .2s;
+      border-right: 1px solid rgba(0,0,0,.2);
+    }
+    .g-block:last-child { border-right: none; }
+    .g-block:hover { filter: brightness(1.18); }
+    .pa { background: rgba(79,156,249,.65);  color: #fff; border-left: 3px solid var(--blue); }
+    .pb { background: rgba(157,92,246,.65);  color: #fff; border-left: 3px solid var(--purple); }
+    .pc { background: rgba(0,212,255,.55);   color: #001a22; border-left: 3px solid var(--cyan); }
+    .pd { background: rgba(16,185,129,.65);  color: #fff; border-left: 3px solid var(--green); }
+    .ps { background: rgba(245,158,11,.35);  color: var(--amber); border-left: 3px solid var(--amber); font-style: italic; }
+    .pi { background: rgba(239,68,68,.12);   color: var(--red); font-size: 10px; }
+    .gantt-legend { display: flex; gap: 18px; margin-top: 18px; flex-wrap: wrap; }
+    .leg-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
+    .leg-dot  { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* ── ORDERS TABLE ────────────────────── */
+    .orders-top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-wrap { position: relative; }
+    .search-ico  { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
+    .search-inp  {
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 12px 8px 34px;
+      border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; width: 230px;
+    }
+    .search-inp:focus { outline: none; border-color: var(--blue); }
+    .ftabs { display: flex; gap: 4px; }
+    .ftab {
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); color: var(--text-2);
+      background: transparent; transition: all .2s; font-family: 'Inter', sans-serif;
+    }
+    .ftab.active { background: var(--surface-2); color: var(--text); border-color: var(--border-b); }
+    .tbl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      padding: 13px 16px; text-align: left;
+      font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--text-3); background: var(--surface-2);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(78,120,220,.05); }
+    tbody td { padding: 14px 16px; font-size: 13px; color: var(--text); white-space: nowrap; }
+    .oid { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-2); }
+    .sbadge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    }
+    .s-urg  { background:rgba(239,68,68,.12); color:var(--red); border:1px solid rgba(239,68,68,.25); }
+    .s-prog { background:rgba(79,156,249,.12); color:var(--blue); border:1px solid rgba(79,156,249,.25); }
+    .s-plan { background:rgba(139,156,200,.08); color:var(--text-2); border:1px solid var(--border); }
+    .s-done { background:rgba(16,185,129,.1); color:var(--green); border:1px solid rgba(16,185,129,.25); }
+    .ai-score { display: inline-flex; align-items: center; gap: 8px; }
+    .sc-bar { width: 50px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .sc-fill { height: 100%; border-radius: 2px; }
+    .score-hi .sc-fill { background: var(--red); }
+    .score-hi .sc-n    { color: var(--red); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; }
+    .score-md .sc-fill { background: var(--amber); }
+    .score-md .sc-n    { color: var(--amber); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; }
+    .score-lo .sc-fill { background: var(--green); }
+    .score-lo .sc-n    { color: var(--green); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; }
+    .dl-urg  { color:var(--red); font-weight:700; }
+    .dl-warn { color:var(--amber); font-weight:600; }
+    .dl-ok   { color:var(--text-2); }
+
+    /* ── SCROLLBAR ───────────────────────── */
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border-b); border-radius:3px; }
+
+    @media(max-width:1100px){
+      .kpi-grid { grid-template-columns: repeat(2,1fr); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .insight-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width:720px){
+      .page { padding:16px 16px 40px; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .insight-grid { grid-template-columns: 1fr; }
+      .eff-row { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ════════════════════════════════════════════════════════════ -->
+<header class="header">
+  <a class="logo" href="#">
+    <div class="logo-icon">⚛</div>
+    <div>
+      <div>QScheduler <span style="color:var(--cyan)">AI</span></div>
+      <div class="logo-sub">QUANTUM PRODUCTION OPTIMIZER</div>
+    </div>
+  </a>
+
+  <nav class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('dash',this)">📊 ダッシュボード</div>
+    <div class="nav-tab" onclick="showPage('fc',this)">🤖 AI需要予測</div>
+    <div class="nav-tab" onclick="showPage('sched',this)">📅 生産スケジュール</div>
+    <div class="nav-tab" onclick="showPage('orders',this)">📦 受注管理</div>
+  </nav>
+
+  <div class="header-right">
+    <div class="ai-status"><div class="ai-dot"></div>AI ENGINE ONLINE</div>
+    <div class="user-avatar">高</div>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- ═══ PAGE 1: DASHBOARD ══════════════════════════════════════════════════ -->
+<div class="page active" id="page-dash">
+  <div class="sec-header">
+    <div>
+      <div class="sec-title">生産管理ダッシュボード</div>
+      <div class="sec-sub">2026年5月4日（月）｜ リアルタイム更新中</div>
+    </div>
+    <button class="btn btn-ghost" onclick="refreshDash()">🔄 データ更新</button>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card blue">
+      <div class="kpi-label">本日の生産達成率</div>
+      <div class="kpi-val" id="k1">—</div>
+      <div class="kpi-trend"><span class="up">↑ 3.2%</span>&nbsp;昨日比</div>
+      <div class="kpi-icon">🏭</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">AI予測精度（今月）</div>
+      <div class="kpi-val" id="k2">—</div>
+      <div class="kpi-trend"><span class="up">↑ 1.1%</span>&nbsp;先月比</div>
+      <div class="kpi-icon">🤖</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">受注残（件）</div>
+      <div class="kpi-val" id="k3">—</div>
+      <div class="kpi-trend"><span class="down">↑ 8件</span>&nbsp;昨日比</div>
+      <div class="kpi-icon">📦</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">設備稼働率</div>
+      <div class="kpi-val" id="k4">—</div>
+      <div class="kpi-trend"><span class="down">↓ 2.1%</span>&nbsp;昨日比</div>
+      <div class="kpi-icon">⚙️</div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">今週の生産実績 vs 計画</div>
+        <span class="badge badge-live">● LIVE</span>
+      </div>
+      <canvas id="prodChart" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="chart-header">
+        <div class="chart-title">AI需要予測サマリー（今後4週）</div>
+        <span class="badge badge-ai">AI</span>
+      </div>
+      <canvas id="sumChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chart-header">
+      <div class="chart-title">AIアラート &amp; インサイト</div>
+      <span style="font-size:12px;color:var(--text-2)">4件</span>
+    </div>
+    <div class="alert-item">
+      <div class="adot danger"></div>
+      <div style="flex:1">
+        <div class="a-title">⚠️ ライン2 稼働率低下を検知</div>
+        <div class="a-desc">AIがプレス成形ライン2の稼働率が前時間比12%低下していることを検知。予防保全の実施を推奨します。</div>
+      </div>
+      <div class="a-time">10分前</div>
+    </div>
+    <div class="alert-item">
+      <div class="adot warn"></div>
+      <div style="flex:1">
+        <div class="a-title">📈 6月の需要急増をAIが予測</div>
+        <div class="a-desc">AI需要予測エンジンが6月の製品A受注を前月比+23%と予測。生産計画の前倒しを検討してください。</div>
+      </div>
+      <div class="a-time">1時間前</div>
+    </div>
+    <div class="alert-item">
+      <div class="adot info"></div>
+      <div style="flex:1">
+        <div class="a-title">📅 スケジュール最適化が利用可能</div>
+        <div class="a-desc">来週のスケジュールに最適化案があります。採用すると稼働率が68%→89%に改善し、生産量+14%が見込まれます。</div>
+      </div>
+      <div class="a-time">2時間前</div>
+    </div>
+    <div class="alert-item">
+      <div class="adot ok"></div>
+      <div style="flex:1">
+        <div class="a-title">✅ 製品B 月次目標達成</div>
+        <div class="a-desc">製品B（アルミダイカスト部品）の5月目標1,200個を本日時点で達成しました。</div>
+      </div>
+      <div class="a-time">昨日</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 2: AI DEMAND FORECAST ════════════════════════════════════════ -->
+<div class="page" id="page-fc">
+  <div class="sec-header">
+    <div>
+      <div class="sec-title">AI需要予測エンジン</div>
+      <div class="sec-sub">LSTMモデルによる需要予測・在庫最適化レコメンド</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="ai-loading" id="fc-loading"><div class="ai-spin"></div>AIモデル推論中...</div>
+      <button class="btn btn-ai" id="fc-btn" onclick="runForecast()">🧠 AIを再分析</button>
+    </div>
+  </div>
+
+  <div class="fc-controls">
+    <select class="form-select" id="prod-sel" onchange="updateFcChart()">
+      <option>精密部品 X-200（製品A）</option>
+      <option>アルミダイカスト部品（製品B）</option>
+      <option>電子基板ユニット（製品C）</option>
+      <option>樹脂成形部品（製品D）</option>
+    </select>
+    <select class="form-select">
+      <option>予測期間：3ヶ月先</option>
+      <option>予測期間：6ヶ月先</option>
+      <option>予測期間：12ヶ月先</option>
+    </select>
+    <select class="form-select">
+      <option>モデル：LSTM + Transformer</option>
+      <option>モデル：ARIMA</option>
+      <option>モデル：Prophet</option>
+    </select>
+    <div class="fc-meta">最終学習: <span style="color:var(--green)">2026-05-04 08:30</span></div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">需要予測チャート — 精密部品 X-200</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:3px">2025年1月〜2026年3月 ｜ 信頼区間 95%</div>
+      </div>
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:6px">
+          <span style="width:22px;height:2px;background:rgba(240,244,255,.8);display:inline-block;border-radius:1px"></span>実績
+        </span>
+        <span style="font-size:12px;color:var(--cyan);display:flex;align-items:center;gap:6px">
+          <span style="width:22px;height:2px;background:var(--cyan);display:inline-block;border-radius:1px;border-top:2px dashed var(--cyan)"></span>AI予測
+        </span>
+        <span style="font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:6px">
+          <span style="width:22px;height:8px;background:rgba(0,212,255,.18);display:inline-block;border-radius:2px"></span>信頼区間
+        </span>
+      </div>
+    </div>
+    <canvas id="fcChart" height="240"></canvas>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="ins-icon">📈</div>
+      <div class="ins-val">+18.2%</div>
+      <div class="ins-label">来月（6月）需要増加予測</div>
+      <div class="ins-desc">前年同月比・季節性トレンドを加味したAI予測。製造業全体の設備投資回復が主因と分析。</div>
+    </div>
+    <div class="insight-card">
+      <div class="ins-icon">⚠️</div>
+      <div class="ins-val">7月下旬</div>
+      <div class="ins-label">需要ピーク到達予測</div>
+      <div class="ins-desc">今期最大需要ピークが7月下旬に到来。7月1日までに生産能力120%確保を推奨します。</div>
+    </div>
+    <div class="insight-card">
+      <div class="ins-icon">📦</div>
+      <div class="ins-val">2,340個</div>
+      <div class="ins-label">AI最適在庫レコメンド</div>
+      <div class="ins-desc">調達リードタイム8日・需要変動σ=±12%を考慮した最適在庫水準。現在比+450個の積み増しを推奨。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 3: PRODUCTION SCHEDULE ═══════════════════════════════════════ -->
+<div class="page" id="page-sched">
+  <div class="sec-header">
+    <div>
+      <div class="sec-title">生産スケジュール最適化</div>
+      <div class="sec-sub">AIが設備稼働率・納期・段取りコストを同時最適化</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-ghost">＜ 前週</button>
+      <span style="font-size:13px;font-weight:700;padding:0 6px">2026年5月 第2週</span>
+      <button class="btn btn-ghost">次週 ＞</button>
+      <button class="btn btn-ai" id="opt-btn" onclick="runOpt()">⚛ AI最適化実行</button>
+    </div>
+  </div>
+
+  <!-- progress bar -->
+  <div class="optim-wrap" id="opt-wrap">
+    <div class="optim-bg"><div class="optim-fill" id="opt-bar"></div></div>
+    <div class="optim-lbl" id="opt-lbl">量子最適化アルゴリズム実行中... 0%</div>
+  </div>
+
+  <!-- efficiency -->
+  <div class="eff-row">
+    <div class="eff-item eff-before">
+      <div class="eff-lbl">最適化前 設備稼働率</div>
+      <div class="eff-num">68%</div>
+      <div class="eff-bar"><div class="eff-fill" style="width:68%"></div></div>
+    </div>
+    <div class="eff-arrow">→</div>
+    <div class="eff-item eff-after" id="eff-after">
+      <div class="eff-lbl">AI最適化後 設備稼働率</div>
+      <div class="eff-num" id="eff-val">—</div>
+      <div class="eff-bar"><div class="eff-fill" id="eff-bar-fill" style="width:0%"></div></div>
+    </div>
+    <div class="eff-item wide">
+      <div class="eff-lbl">AIインサイト</div>
+      <div id="opt-insight" style="font-size:12px;color:var(--text-3);line-height:1.7;margin-top:4px">
+        「AI最適化実行」ボタンを押すと、量子最適化アルゴリズムが製品優先度・設備能力・納期制約を同時に解析し、最適スケジュールを生成します。
+      </div>
+    </div>
+  </div>
+
+  <!-- Gantt -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div class="chart-title">週間ガントチャート</div>
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-3)">05/05（月）〜 05/09（金）</div>
+    </div>
+    <div class="gantt-wrap">
+      <div class="gantt-days">
+        <div class="g-day">5/5（月）</div>
+        <div class="g-day">5/6（火）</div>
+        <div class="g-day">5/7（水）</div>
+        <div class="g-day">5/8（木）</div>
+        <div class="g-day">5/9（金）</div>
+      </div>
+
+      <!-- BEFORE -->
+      <div id="g-before">
+        <div class="gantt-row">
+          <div class="g-lbl">ライン1<small>精密加工</small></div>
+          <div class="g-track">
+            <div class="g-block pa" style="flex:2">製品A × 200</div>
+            <div class="g-block ps" style="flex:0.5">段取</div>
+            <div class="g-block pi" style="flex:0.8">待機</div>
+            <div class="g-block pb" style="flex:1.7">製品B × 120</div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="g-lbl">ライン2<small>プレス成形</small></div>
+          <div class="g-track">
+            <div class="g-block pc" style="flex:2.8">製品C × 350</div>
+            <div class="g-block pi" style="flex:0.6">停止</div>
+            <div class="g-block pd" style="flex:1.6">製品D × 180</div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="g-lbl">ライン3<small>組立</small></div>
+          <div class="g-track">
+            <div class="g-block ps" style="flex:0.5">段取</div>
+            <div class="g-block pb" style="flex:2">製品B × 200</div>
+            <div class="g-block pi" style="flex:0.5">—</div>
+            <div class="g-block pa" style="flex:2">製品A × 150</div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="g-lbl">ライン4<small>検査・仕上げ</small></div>
+          <div class="g-track">
+            <div class="g-block pc" style="flex:1.5">製品C 検査</div>
+            <div class="g-block pi" style="flex:1">待機</div>
+            <div class="g-block pa" style="flex:1.5">製品A 仕上</div>
+            <div class="g-block pb" style="flex:1">製品B 検査</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER (hidden) -->
+      <div id="g-after" style="display:none">
+        <div class="gantt-row">
+          <div class="g-lbl">ライン1<small>精密加工</small></div>
+          <div class="g-track">
+            <div class="g-block pa" style="flex:2.5">製品A × 250</div>
+            <div class="g-block ps" style="flex:0.3">段取</div>
+            <div class="g-block pb" style="flex:2.2">製品B × 200</div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="g-lbl">ライン2<small>プレス成形</small></div>
+          <div class="g-track">
+            <div class="g-block pc" style="flex:2.5">製品C × 300</div>
+            <div class="g-block pd" style="flex:2.5">製品D × 280</div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="g-lbl">ライン3<small>組立</small></div>
+          <div class="g-track">
+            <div class="g-block pb" style="flex:2.5">製品B × 250</div>
+            <div class="g-block pa" style="flex:2.5">製品A × 200</div>
+          </div>
+        </div>
+        <div class="gantt-row">
+          <div class="g-lbl">ライン4<small>検査・仕上げ</small></div>
+          <div class="g-track">
+            <div class="g-block pc" style="flex:1.5">製品C 検査</div>
+            <div class="g-block pa" style="flex:1.5">製品A 仕上</div>
+            <div class="g-block pb" style="flex:2">製品B 検査</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gantt-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(79,156,249,.65)"></div>製品A（精密部品X-200）</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(157,92,246,.65)"></div>製品B（アルミダイカスト）</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(0,212,255,.55)"></div>製品C（電子基板ユニット）</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(16,185,129,.65)"></div>製品D（樹脂成形部品）</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(245,158,11,.35)"></div>段取り替え</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(239,68,68,.15)"></div>待機・停止</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 4: ORDERS ════════════════════════════════════════════════════ -->
+<div class="page" id="page-orders">
+  <div class="sec-header">
+    <div>
+      <div class="sec-title">受注管理</div>
+      <div class="sec-sub">AIが納期逼迫度・ライン適合性をスコアリング — 47件受注中</div>
+    </div>
+    <button class="btn btn-primary">＋ 新規受注登録</button>
+  </div>
+
+  <div class="orders-top">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" type="text" placeholder="受注番号・顧客名で検索">
+    </div>
+    <div class="ftabs" id="ftabs">
+      <button class="ftab active" onclick="setFtab(this)">すべて</button>
+      <button class="ftab" onclick="setFtab(this)">🔴 緊急</button>
+      <button class="ftab" onclick="setFtab(this)">🔵 生産中</button>
+      <button class="ftab" onclick="setFtab(this)">⬜ 計画中</button>
+      <button class="ftab" onclick="setFtab(this)">✅ 完了</button>
+    </div>
+    <div style="margin-left:auto;font-size:12px;color:var(--text-2)">47件中 10件表示</div>
+  </div>
+
+  <div class="tbl-card">
+    <table>
+      <thead>
+        <tr>
+          <th>受注番号</th><th>顧客名</th><th>製品</th><th>数量</th>
+          <th>納期</th><th>ステータス</th><th>AI優先度スコア</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="oid">ORD-2605-001</span></td>
+          <td>株式会社田中製作所</td><td>精密部品 X-200</td><td><b>850</b>個</td>
+          <td><span class="dl-urg">5/12 ⚠️</span></td>
+          <td><span class="sbadge s-urg">🔴 緊急</span></td>
+          <td><div class="ai-score score-hi"><div class="sc-bar"><div class="sc-fill" style="width:96%"></div></div><span class="sc-n">96</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2605-002</span></td>
+          <td>山田エンジニアリング</td><td>アルミダイカスト部品</td><td><b>1,200</b>個</td>
+          <td><span class="dl-warn">5/20 △</span></td>
+          <td><span class="sbadge s-prog">🔵 生産中</span></td>
+          <td><div class="ai-score score-hi"><div class="sc-bar"><div class="sc-fill" style="width:87%"></div></div><span class="sc-n">87</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2605-003</span></td>
+          <td>東京精機工業（株）</td><td>電子基板ユニット</td><td><b>320</b>個</td>
+          <td><span class="dl-warn">5/25 △</span></td>
+          <td><span class="sbadge s-prog">🔵 生産中</span></td>
+          <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:72%"></div></div><span class="sc-n">72</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2605-004</span></td>
+          <td>中部自動車部品（株）</td><td>樹脂成形部品</td><td><b>2,500</b>個</td>
+          <td><span class="dl-ok">6/10</span></td>
+          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:65%"></div></div><span class="sc-n">65</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2605-005</span></td>
+          <td>北海道機械工業</td><td>精密部品 X-200</td><td><b>480</b>個</td>
+          <td><span class="dl-ok">6/15</span></td>
+          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:58%"></div></div><span class="sc-n">58</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2605-006</span></td>
+          <td>鈴木重工業（株）</td><td>アルミダイカスト部品</td><td><b>760</b>個</td>
+          <td><span class="dl-ok">6/20</span></td>
+          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:44%"></div></div><span class="sc-n">44</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2604-089</span></td>
+          <td>大阪精密機器（株）</td><td>電子基板ユニット</td><td><b>890</b>個</td>
+          <td><span class="dl-ok">5/30</span></td>
+          <td><span class="sbadge s-prog">🔵 生産中</span></td>
+          <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:61%"></div></div><span class="sc-n">61</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2604-078</span></td>
+          <td>九州電子工業</td><td>樹脂成形部品</td><td><b>1,150</b>個</td>
+          <td><span class="dl-ok">6/30</span></td>
+          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:38%"></div></div><span class="sc-n">38</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2604-065</span></td>
+          <td>横浜精工（株）</td><td>精密部品 X-200</td><td><b>300</b>個</td>
+          <td><span class="dl-ok">—</span></td>
+          <td><span class="sbadge s-done">✅ 完了</span></td>
+          <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:100%"></div></div><span class="sc-n" style="color:var(--green)">完了</span></div></td>
+        </tr>
+        <tr>
+          <td><span class="oid">ORD-2604-052</span></td>
+          <td>仙台テクノ工業</td><td>アルミダイカスト部品</td><td><b>640</b>個</td>
+          <td><span class="dl-ok">—</span></td>
+          <td><span class="sbadge s-done">✅ 完了</span></td>
+          <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:100%"></div></div><span class="sc-n" style="color:var(--green)">完了</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<!-- ═══ JAVASCRIPT ═════════════════════════════════════════════════════════ -->
+<script>
+// ── Nav ─────────────────────────────────────────────────────────────────
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'fc' && !fcInit) initFcChart();
+}
+function setFtab(el) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Chart defaults ───────────────────────────────────────────────────────
+Chart.defaults.color = '#8b9cc8';
+Chart.defaults.borderColor = 'rgba(78,120,220,0.12)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 11;
+
+const TOOLTIP = {
+  backgroundColor: '#0e1628',
+  borderColor: 'rgba(78,120,220,0.3)',
+  borderWidth: 1,
+  padding: 12,
+  cornerRadius: 8,
+};
+
+// ── Animated counter ─────────────────────────────────────────────────────
+function countUp(el, to, suffix, ms) {
+  const start = performance.now();
+  (function tick(now) {
+    const p = Math.min((now - start) / ms, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(to * ease) + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+  })(start);
+}
+
+// ── Dashboard charts ─────────────────────────────────────────────────────
+function initDash() {
+  // KPI counters
+  setTimeout(() => {
+    countUp(document.getElementById('k1'), 82, '%', 1100);
+    countUp(document.getElementById('k2'), 94, '%', 1200);
+    countUp(document.getElementById('k3'), 47,  '', 900);
+    countUp(document.getElementById('k4'), 78, '%', 1050);
+  }, 300);
+
+  // Production bar
+  new Chart(document.getElementById('prodChart'), {
+    type: 'bar',
+    data: {
+      labels: ['月', '火', '水', '木', '金', '本日'],
+      datasets: [
+        {
+          label: '実績',
+          data: [1420, 1580, 1390, 1640, 1510, 980],
+          backgroundColor: 'rgba(79,156,249,.55)',
+          borderColor: '#4f9cf9',
+          borderWidth: 1,
+          borderRadius: 5,
+        },
+        {
+          label: '計画',
+          data: [1500, 1500, 1500, 1500, 1500, 1500],
+          type: 'line',
+          borderColor: 'rgba(245,158,11,.7)',
+          borderWidth: 2,
+          borderDash: [5,4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color:'#8b9cc8', usePointStyle:true, font:{size:11} } },
+        tooltip: { ...TOOLTIP, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}個` } }
+      },
+      scales: {
+        x: { grid:{color:'rgba(78,120,220,.07)'}, ticks:{color:'#8b9cc8'} },
+        y: { grid:{color:'rgba(78,120,220,.07)'}, min:0, max:2000,
+          ticks:{color:'#8b9cc8', callback: v => (v/1000).toFixed(1)+'k'} }
+      }
+    }
+  });
+
+  // Summary forecast
+  new Chart(document.getElementById('sumChart'), {
+    type: 'line',
+    data: {
+      labels: ['5/5週', '5/12週', '5/19週', '5/26週'],
+      datasets: [
+        {
+          label: 'AI需要予測',
+          data: [7200, 7850, 8420, 8100],
+          borderColor: '#00d4ff',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#00d4ff',
+          pointRadius: 5,
+          tension: 0.4,
+          fill: { target:'origin', above:'rgba(0,212,255,.05)' }
+        },
+        {
+          label: '生産能力上限',
+          data: [8500, 8500, 8500, 8500],
+          borderColor: 'rgba(239,68,68,.45)',
+          borderWidth: 1.5,
+          borderDash: [4,4],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color:'#8b9cc8', usePointStyle:true, font:{size:11} } },
+        tooltip: { ...TOOLTIP, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}個` } }
+      },
+      scales: {
+        x: { grid:{color:'rgba(78,120,220,.07)'}, ticks:{color:'#8b9cc8'} },
+        y: { grid:{color:'rgba(78,120,220,.07)'}, min:5000, max:10000,
+          ticks:{color:'#8b9cc8', callback: v => (v/1000).toFixed(1)+'k'} }
+      }
+    }
+  });
+}
+
+function refreshDash() {
+  const k1 = document.getElementById('k1');
+  const prev = parseInt(k1.textContent);
+  countUp(k1, prev + 2, '%', 700);
+}
+
+// ── Forecast chart ───────────────────────────────────────────────────────
+let fcInit = false, fcChart = null;
+
+const FC_DATA = {
+  A: {
+    hist:    [1250,1180,1320,1450,1380,1520,1610,1490,1580,1720,1650,1810],
+    pred:    [null,null,null,null,null,null,null,null,null,null,null,1810,1920,2050,1980],
+    upper:   [null,null,null,null,null,null,null,null,null,null,null,1810,2080,2220,2140],
+    lower:   [null,null,null,null,null,null,null,null,null,null,null,1810,1760,1880,1820],
+  },
+  B: {
+    hist:    [980,1020,1150,1080,1200,1180,1320,1250,1400,1350,1420,1380],
+    pred:    [null,null,null,null,null,null,null,null,null,null,null,1380,1450,1520,1490],
+    upper:   [null,null,null,null,null,null,null,null,null,null,null,1380,1580,1650,1620],
+    lower:   [null,null,null,null,null,null,null,null,null,null,null,1380,1320,1390,1360],
+  },
+  C: {
+    hist:    [420,390,450,480,510,490,540,520,580,560,620,600],
+    pred:    [null,null,null,null,null,null,null,null,null,null,null,600,650,720,680],
+    upper:   [null,null,null,null,null,null,null,null,null,null,null,600,700,780,740],
+    lower:   [null,null,null,null,null,null,null,null,null,null,null,600,600,660,620],
+  },
+  D: {
+    hist:    [2100,2050,2280,2150,2400,2350,2500,2420,2600,2550,2700,2650],
+    pred:    [null,null,null,null,null,null,null,null,null,null,null,2650,2820,2950,2900],
+    upper:   [null,null,null,null,null,null,null,null,null,null,null,2650,3050,3200,3120],
+    lower:   [null,null,null,null,null,null,null,null,null,null,null,2650,2590,2700,2680],
+  }
+};
+const FC_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','1月予測','2月予測','3月予測'];
+
+function getProdKey() {
+  const v = document.getElementById('prod-sel').value;
+  if (v.includes('製品B')) return 'B';
+  if (v.includes('製品C')) return 'C';
+  if (v.includes('製品D')) return 'D';
+  return 'A';
+}
+
+function initFcChart() {
+  fcInit = true;
+  const d = FC_DATA.A;
+  fcChart = new Chart(document.getElementById('fcChart'), {
+    type: 'line',
+    data: {
+      labels: FC_LABELS,
+      datasets: [
+        { label:'上限', data:d.upper, borderColor:'transparent', backgroundColor:'rgba(0,212,255,.13)', fill:'+1', pointRadius:0, tension:.4 },
+        { label:'下限', data:d.lower, borderColor:'transparent', backgroundColor:'transparent', fill:false, pointRadius:0, tension:.4 },
+        { label:'実績', data:[...d.hist,null,null,null], borderColor:'rgba(240,244,255,.8)', borderWidth:2, pointBackgroundColor:'rgba(240,244,255,.8)', pointRadius:3, tension:.4, fill:false },
+        { label:'AI予測', data:d.pred, borderColor:'#00d4ff', borderWidth:2.5, borderDash:[6,3], pointBackgroundColor:'#00d4ff', pointBorderColor:'#070b18', pointBorderWidth:2, pointRadius:5, tension:.4, fill:false }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: {
+          labels: { color:'#8b9cc8', usePointStyle:true, font:{size:11},
+            filter: i => !i.text.includes('限') }
+        },
+        tooltip: {
+          ...TOOLTIP,
+          filter: i => i.dataset.label !== '下限',
+          callbacks: { label: c => c.parsed.y==null ? null : ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}個` }
+        }
+      },
+      scales: {
+        x: {
+          grid:{color:'rgba(78,120,220,.07)'},
+          ticks: {
+            color: (c) => c.index >= 12 ? '#00d4ff' : '#8b9cc8',
+            font: (c) => c.index >= 12 ? {weight:'600'} : {}
+          }
+        },
+        y: { grid:{color:'rgba(78,120,220,.07)'}, ticks:{color:'#8b9cc8', callback: v=>v.toLocaleString()+'個'} }
+      }
+    }
+  });
+}
+
+function updateFcChart() {
+  if (!fcChart) return;
+  const d = FC_DATA[getProdKey()];
+  fcChart.data.datasets[0].data = d.upper;
+  fcChart.data.datasets[1].data = d.lower;
+  fcChart.data.datasets[2].data = [...d.hist, null, null, null];
+  fcChart.data.datasets[3].data = d.pred;
+  fcChart.update('active');
+}
+
+function runForecast() {
+  const loading = document.getElementById('fc-loading');
+  const btn = document.getElementById('fc-btn');
+  loading.classList.add('show');
+  btn.disabled = true;
+  setTimeout(() => {
+    loading.classList.remove('show');
+    updateFcChart();
+    btn.disabled = false;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ 分析完了';
+    btn.style.background = 'linear-gradient(135deg,#065f46,#10b981)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2200);
+  }, 2600);
+}
+
+// ── Optimization ─────────────────────────────────────────────────────────
+let optDone = false;
+
+function runOpt() {
+  if (optDone) {
+    // reset
+    optDone = false;
+    document.getElementById('g-before').style.display = 'block';
+    document.getElementById('g-after').style.display = 'none';
+    document.getElementById('eff-val').textContent = '—';
+    const ea = document.getElementById('eff-after');
+    ea.classList.remove('done');
+    document.getElementById('eff-bar-fill').style.width = '0%';
+    document.getElementById('opt-insight').textContent = '「AI最適化実行」ボタンを押すと、量子最適化アルゴリズムが製品優先度・設備能力・納期制約を同時に解析し、最適スケジュールを生成します。';
+    document.getElementById('opt-insight').style.color = 'var(--text-3)';
+    document.getElementById('opt-btn').innerHTML = '⚛ AI最適化実行';
+    return;
+  }
+
+  const wrap  = document.getElementById('opt-wrap');
+  const bar   = document.getElementById('opt-bar');
+  const lbl   = document.getElementById('opt-lbl');
+  const btn   = document.getElementById('opt-btn');
+  wrap.classList.add('show');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ 最適化中...';
+
+  const steps = [
+    { p:14, t:'制約条件を解析中...' },
+    { p:28, t:'受注優先度マトリクスを計算中...' },
+    { p:44, t:'設備能力とのマッチング...' },
+    { p:61, t:'量子インスパイアド最適化実行中...' },
+    { p:77, t:'納期整合性を検証中...' },
+    { p:92, t:'スケジュール生成中...' },
+    { p:100, t:'最適化完了！' },
+  ];
+
+  let i = 0;
+  function step() {
+    if (i >= steps.length) {
+      setTimeout(() => {
+        wrap.classList.remove('show');
+        bar.style.width = '0%';
+        document.getElementById('g-before').style.display = 'none';
+        document.getElementById('g-after').style.display = 'block';
+        document.getElementById('eff-val').textContent = '89%';
+        const ea = document.getElementById('eff-after');
+        ea.classList.add('done');
+        document.getElementById('eff-bar-fill').style.width = '89%';
+        document.getElementById('opt-insight').innerHTML =
+          '✅ <strong>稼働率 +21pt 改善</strong>。段取り替えを3.2時間削減、待機時間をゼロに。全受注の納期を守りながら今週の生産量を<strong>+14%</strong>向上させました。';
+        document.getElementById('opt-insight').style.color = 'var(--text)';
+        btn.disabled = false;
+        btn.innerHTML = '↩ リセット';
+        optDone = true;
+      }, 350);
+      return;
+    }
+    bar.style.width = steps[i].p + '%';
+    lbl.textContent = steps[i].t + ' ' + steps[i].p + '%';
+    i++;
+    setTimeout(step, 280 + Math.random() * 180);
+  }
+  step();
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', initDash);
+</script>
+</body>
+</html>
