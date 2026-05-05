@@ -11,12 +11,13 @@
        THEME VARIABLES
     ═══════════════════════════════════════════════════════════ */
     :root {
-      --bg:        #f0f4f8;
-      --bg-alt:    #e8edf3;
+      --bg:        #f5f3ff;
+      --bg-dot:    rgba(124,58,237,.06);
+      --bg-alt:    #ede9fe;
       --surface:   #ffffff;
-      --surface-2: #f8fafc;
-      --border:    #e2e8f0;
-      --border-b:  #cbd5e1;
+      --surface-2: #faf9ff;
+      --border:    #ede9fe;
+      --border-b:  #ddd6fe;
       --text:      #0f172a;
       --text-2:    #475569;
       --text-3:    #94a3b8;
@@ -32,18 +33,22 @@
       --red-lt:    #fee2e2;
       --purple:    #7c3aed;
       --purple-lt: #ede9fe;
+      --quantum:   #7c3aed;
+      --quantum-lt:#ede9fe;
+      --quantum-dk:#4c1d95;
+      --electron:  #06b6d4;
       --navy:      #0f172a;
       /* sidebar */
-      --sb-bg:     #0f172a;
-      --sb-border: rgba(255,255,255,.06);
-      --sb-text:   rgba(255,255,255,.55);
-      --sb-text-h: rgba(255,255,255,.88);
-      --sb-active: rgba(255,255,255,.11);
-      --sb-icon:   rgba(255,255,255,.38);
-      --sb-icon-a: #60a5fa;
+      --sb-bg:     #0c0a1a;
+      --sb-border: rgba(124,58,237,.12);
+      --sb-text:   rgba(255,255,255,.5);
+      --sb-text-h: rgba(255,255,255,.85);
+      --sb-active: rgba(124,58,237,.22);
+      --sb-icon:   rgba(255,255,255,.35);
+      --sb-icon-a: #a78bfa;
       /* topbar */
-      --tb-bg:     rgba(255,255,255,.88);
-      --tb-border: #e2e8f0;
+      --tb-bg:     rgba(255,255,255,.9);
+      --tb-border: #ede9fe;
       /* shadows */
       --shadow-sm: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
       --shadow-md: 0 4px 20px rgba(0,0,0,.1);
@@ -54,25 +59,27 @@
     }
 
     [data-theme="dark"] {
-      --bg:        #0d1117;
-      --bg-alt:    #161b22;
-      --surface:   #1c2128;
-      --surface-2: #22272e;
-      --border:    #30363d;
-      --border-b:  #444c56;
-      --text:      #e6edf3;
-      --text-2:    #8b949e;
-      --text-3:    #6e7681;
+      --bg:        #080613;
+      --bg-dot:    rgba(124,58,237,.04);
+      --bg-alt:    #0d0b1e;
+      --surface:   #100e20;
+      --surface-2: #16132b;
+      --border:    rgba(124,58,237,.18);
+      --border-b:  rgba(124,58,237,.32);
+      --text:      #f0edff;
+      --text-2:    #9d94c5;
+      --text-3:    #6b6390;
       --blue-lt:   rgba(37,99,235,.18);
       --cyan-lt:   rgba(8,145,178,.16);
       --green-lt:  rgba(5,150,105,.16);
       --amber-lt:  rgba(217,119,6,.16);
       --red-lt:    rgba(220,38,38,.16);
-      --purple-lt: rgba(124,58,237,.16);
-      --tb-bg:     rgba(28,33,40,.92);
-      --tb-border: #30363d;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
-      --shadow-md: 0 4px 20px rgba(0,0,0,.45);
+      --purple-lt: rgba(124,58,237,.2);
+      --quantum-lt:rgba(124,58,237,.2);
+      --tb-bg:     rgba(16,14,32,.95);
+      --tb-border: rgba(124,58,237,.15);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.45);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.6);
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -80,7 +87,9 @@
     ═══════════════════════════════════════════════════════════ */
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     body {
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image: radial-gradient(circle, var(--bg-dot) 1px, transparent 1px);
+      background-size: 22px 22px;
       color: var(--text);
       font-family: 'Inter',-apple-system,sans-serif;
       font-size: 14px;
@@ -103,7 +112,19 @@
       z-index: 200;
       transition: transform .26s cubic-bezier(.4,0,.2,1);
       will-change: transform;
+      overflow: hidden;
     }
+    .sidebar::after {
+      content:'';
+      position:absolute;inset:0;
+      pointer-events:none;
+      background-image:
+        linear-gradient(rgba(124,58,237,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,237,.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      z-index:0;
+    }
+    .sidebar > * { position:relative; z-index:1; }
     .sb-logo {
       padding: 18px 18px 16px;
       border-bottom: 1px solid var(--sb-border);
@@ -115,7 +136,7 @@
     }
     .sb-logo-icon {
       width: 36px;height:36px;
-      background: linear-gradient(135deg,#3b82f6,#06b6d4);
+      background: linear-gradient(135deg,#7c3aed,#06b6d4);
       border-radius: 10px;
       display:flex;align-items:center;justify-content:center;
       flex-shrink:0;
@@ -259,9 +280,94 @@
     .sec-sub{font-size:13px;color:var(--text-3);margin-top:4px;}
 
     /* ═══════════════════════════════════════════════════════════
+       HERO CARD
+    ═══════════════════════════════════════════════════════════ */
+    .hero-card {
+      width:100%;
+      background:linear-gradient(135deg, #1e1040 0%, #0f0628 55%, #0a0820 100%);
+      border-radius:18px;
+      padding:30px 36px;
+      margin-bottom:22px;
+      position:relative;overflow:hidden;
+      box-shadow:0 8px 40px rgba(124,58,237,.3), 0 1px 0 rgba(124,58,237,.45) inset;
+    }
+    .hero-card::before {
+      content:'';position:absolute;
+      top:-80px;left:-60px;
+      width:380px;height:380px;
+      background:radial-gradient(circle, rgba(124,58,237,.42) 0%, transparent 65%);
+      pointer-events:none;
+    }
+    .hero-card::after {
+      content:'';position:absolute;
+      bottom:-50px;right:6%;
+      width:240px;height:240px;
+      background:radial-gradient(circle, rgba(6,182,212,.22) 0%, transparent 65%);
+      pointer-events:none;
+    }
+    .hero-inner {
+      position:relative;z-index:1;
+      display:flex;align-items:center;gap:36px;
+      flex-wrap:wrap;
+    }
+    .hero-main-lbl {
+      font-size:10px;font-weight:700;letter-spacing:.18em;
+      text-transform:uppercase;
+      color:rgba(167,139,250,.7);
+      font-family:'IBM Plex Mono',monospace;
+      margin-bottom:6px;
+    }
+    .hero-val-row { display:flex;align-items:baseline;gap:4px;line-height:1; }
+    .hero-main-val {
+      font-size:76px;font-weight:800;
+      font-family:'IBM Plex Mono',monospace;
+      color:#ffffff;letter-spacing:-.04em;
+    }
+    .hero-main-unit {
+      font-size:30px;font-weight:700;
+      font-family:'IBM Plex Mono',monospace;
+      color:rgba(255,255,255,.5);
+      margin-bottom:6px;
+    }
+    .hero-main-trend {
+      margin-top:10px;font-size:12px;
+      color:rgba(255,255,255,.38);
+      display:flex;align-items:center;gap:5px;
+    }
+    .hero-main-trend .dn { color:#f87171;font-weight:700; }
+    .hero-main-trend .up { color:#34d399;font-weight:700; }
+    .hero-divider {
+      width:1px;height:76px;flex-shrink:0;
+      background:linear-gradient(to bottom, transparent, rgba(124,58,237,.5), transparent);
+    }
+    .hero-subs { display:flex;gap:28px;flex-wrap:wrap; }
+    .hero-sub { }
+    .hero-sub-lbl {
+      font-size:9.5px;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:rgba(255,255,255,.28);
+      font-family:'IBM Plex Mono',monospace;margin-bottom:5px;
+    }
+    .hero-sub-val {
+      font-size:24px;font-weight:800;
+      font-family:'IBM Plex Mono',monospace;
+      color:rgba(255,255,255,.78);
+    }
+    .hero-sub-trend {
+      font-size:11px;color:rgba(255,255,255,.3);margin-top:4px;
+    }
+    .hero-sub-trend .up { color:#34d399;font-weight:700; }
+    .hero-sub-trend .dn { color:#f87171;font-weight:700; }
+    @media(max-width:720px){
+      .hero-main-val{font-size:54px;}
+      .hero-card{padding:22px 20px;}
+      .hero-divider{display:none;}
+      .hero-subs{gap:20px;}
+    }
+
+    /* ═══════════════════════════════════════════════════════════
        KPI GRID
     ═══════════════════════════════════════════════════════════ */
-    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
     .kpi-card{
       background:var(--surface);border:1px solid var(--border);
       border-radius:14px;padding:20px 20px 18px;
@@ -270,14 +376,11 @@
       transition:box-shadow .2s,transform .2s;
     }
     .kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
-    .kpi-card::before{
-      content:'';position:absolute;top:0;left:0;right:0;height:3px;
-      border-radius:14px 14px 0 0;
-    }
-    .kpi-card.blue::before  {background:linear-gradient(90deg,var(--blue),#60a5fa);}
-    .kpi-card.green::before {background:linear-gradient(90deg,var(--green),#34d399);}
-    .kpi-card.amber::before {background:linear-gradient(90deg,var(--amber),#fbbf24);}
-    .kpi-card.purple::before{background:linear-gradient(90deg,var(--purple),#8b5cf6);}
+    .kpi-card::before{ display:none; }
+    .kpi-card.blue   { border-left:4px solid var(--blue); }
+    .kpi-card.green  { border-left:4px solid var(--green); }
+    .kpi-card.amber  { border-left:4px solid var(--amber); }
+    .kpi-card.purple { border-left:4px solid var(--quantum); }
     .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
     .kpi-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);}
     .kpi-icon-wrap{
@@ -601,7 +704,7 @@
       .tb-hamburger{display:flex;}
     }
     @media(max-width:1100px){
-      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .kpi-grid{grid-template-columns:repeat(3,1fr);}
       .chart-grid{grid-template-columns:1fr;}
       .insight-grid{grid-template-columns:1fr 1fr;}
     }
@@ -716,6 +819,38 @@
     </button>
   </div>
 
+  <!-- Hero KPI — 設備稼働率 -->
+  <div class="hero-card">
+    <div class="hero-inner">
+      <div class="hero-main">
+        <div class="hero-main-lbl">設備稼働率</div>
+        <div class="hero-val-row">
+          <div class="hero-main-val" id="hero-oee">—</div>
+          <div class="hero-main-unit">%</div>
+        </div>
+        <div class="hero-main-trend"><span class="dn">↓ 2.1%</span>&nbsp;昨日比</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-subs">
+        <div class="hero-sub">
+          <div class="hero-sub-lbl">生産達成率</div>
+          <div class="hero-sub-val"><span id="h-prod">—</span><span style="font-size:16px;opacity:.55">%</span></div>
+          <div class="hero-sub-trend"><span class="up">↑ 3.2%</span> 昨日比</div>
+        </div>
+        <div class="hero-sub">
+          <div class="hero-sub-lbl">AI予測精度</div>
+          <div class="hero-sub-val"><span id="h-ai">—</span><span style="font-size:16px;opacity:.55">%</span></div>
+          <div class="hero-sub-trend"><span class="up">↑ 1.1%</span> 先月比</div>
+        </div>
+        <div class="hero-sub">
+          <div class="hero-sub-lbl">受注残（件）</div>
+          <div class="hero-sub-val"><span id="h-ord">—</span></div>
+          <div class="hero-sub-trend"><span class="dn">↑ 8件</span> 昨日比</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="kpi-grid">
     <div class="kpi-card blue">
       <div class="kpi-top">
@@ -746,16 +881,6 @@
       </div>
       <div class="kpi-val" id="k3">—</div>
       <div class="kpi-trend"><span class="down">↑ 8件</span>&nbsp;昨日比</div>
-    </div>
-    <div class="kpi-card purple">
-      <div class="kpi-top">
-        <div class="kpi-label">設備稼働率</div>
-        <div class="kpi-icon-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-      </div>
-      <div class="kpi-val" id="k4">—</div>
-      <div class="kpi-trend"><span class="down">↓ 2.1%</span>&nbsp;昨日比</div>
     </div>
   </div>
 
@@ -1238,8 +1363,8 @@ function setFtab(el) {
 function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
 function chartColors() {
   return isDark()
-    ? { grid: '#30363d', label: '#8b949e', tooltip_bg: '#22272e', tooltip_border: '#444c56' }
-    : { grid: '#f1f5f9', label: '#64748b', tooltip_bg: '#0f172a', tooltip_border: '#334155' };
+    ? { grid: 'rgba(124,58,237,.12)', label: '#6b6390', tooltip_bg: '#16132b', tooltip_border: 'rgba(124,58,237,.35)' }
+    : { grid: '#ede9fe', label: '#64748b', tooltip_bg: '#0f172a', tooltip_border: '#4c1d95' };
 }
 function makeTooltip() {
   const c = chartColors();
@@ -1278,7 +1403,12 @@ function initDash() {
     countUp(document.getElementById('k1'), 82, '%', 1100);
     countUp(document.getElementById('k2'), 94, '%', 1200);
     countUp(document.getElementById('k3'), 47,  '', 900);
-    countUp(document.getElementById('k4'), 78, '%', 1050);
+    // Hero card — 設備稼働率
+    countUp(document.getElementById('hero-oee'), 78, '', 1050);
+    // Hero sub-metrics (strip trailing % for countUp, unit shown in span)
+    countUp(document.getElementById('h-prod'), 82, '', 1100);
+    countUp(document.getElementById('h-ai'),   94, '', 1200);
+    countUp(document.getElementById('h-ord'),  47, '', 900);
   }, 300);
 
   const c = chartColors();
