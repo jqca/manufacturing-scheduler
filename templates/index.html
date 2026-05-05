@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
+    /* ═══════════════════════════════════════════════════════════
+       THEME VARIABLES
+    ═══════════════════════════════════════════════════════════ */
     :root {
       --bg:        #f0f4f8;
       --bg-alt:    #e8edf3;
@@ -30,435 +33,729 @@
       --purple:    #7c3aed;
       --purple-lt: #ede9fe;
       --navy:      #0f172a;
+      /* sidebar */
+      --sb-bg:     #0f172a;
+      --sb-border: rgba(255,255,255,.06);
+      --sb-text:   rgba(255,255,255,.55);
+      --sb-text-h: rgba(255,255,255,.88);
+      --sb-active: rgba(255,255,255,.11);
+      --sb-icon:   rgba(255,255,255,.38);
+      --sb-icon-a: #60a5fa;
+      /* topbar */
+      --tb-bg:     rgba(255,255,255,.88);
+      --tb-border: #e2e8f0;
+      /* shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.1);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,.16);
+      /* layout */
+      --sb-w: 240px;
+      --tb-h: 52px;
     }
 
-    *{margin:0;padding:0;box-sizing:border-box;}
+    [data-theme="dark"] {
+      --bg:        #0d1117;
+      --bg-alt:    #161b22;
+      --surface:   #1c2128;
+      --surface-2: #22272e;
+      --border:    #30363d;
+      --border-b:  #444c56;
+      --text:      #e6edf3;
+      --text-2:    #8b949e;
+      --text-3:    #6e7681;
+      --blue-lt:   rgba(37,99,235,.18);
+      --cyan-lt:   rgba(8,145,178,.16);
+      --green-lt:  rgba(5,150,105,.16);
+      --amber-lt:  rgba(217,119,6,.16);
+      --red-lt:    rgba(220,38,38,.16);
+      --purple-lt: rgba(124,58,237,.16);
+      --tb-bg:     rgba(28,33,40,.92);
+      --tb-border: #30363d;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.45);
+    }
 
+    /* ═══════════════════════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════════════════════ */
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'Inter',-apple-system,sans-serif;
       font-size: 14px;
       line-height: 1.5;
       min-height: 100vh;
+      transition: background .25s,color .25s;
     }
 
-    /* ── HEADER ─────────────────────────── */
-    .header {
-      background: var(--navy);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      box-shadow: 0 2px 12px rgba(0,0,0,.25);
-      position: fixed; top:0; left:0; right:0; z-index:100;
-      height: 60px;
-      display: flex; align-items: center;
-      padding: 0 24px; gap: 20px;
+    /* ═══════════════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════════════ */
+    .sidebar {
+      position: fixed;
+      top:0;left:0;bottom:0;
+      width: var(--sb-w);
+      background: var(--sb-bg);
+      border-right: 1px solid var(--sb-border);
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      transition: transform .26s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
     }
-    .logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; font-size: 15px; color: #fff;
-      white-space: nowrap; text-decoration: none;
+    .sb-logo {
+      padding: 18px 18px 16px;
+      border-bottom: 1px solid var(--sb-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      flex-shrink: 0;
     }
-    .logo-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, #3b82f6, #06b6d4);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
+    .sb-logo-icon {
+      width: 36px;height:36px;
+      background: linear-gradient(135deg,#3b82f6,#06b6d4);
+      border-radius: 10px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
     }
-    .logo-sub {
-      font-size: 9px; color: rgba(255,255,255,.45);
-      font-family: 'IBM Plex Mono', monospace;
-      letter-spacing: 0.12em; margin-top: 1px;
+    .sb-logo-icon svg{color:#fff;}
+    .sb-logo-name{font-size:14px;font-weight:700;color:#fff;line-height:1.25;}
+    .sb-logo-sub{
+      font-size:8.5px;color:rgba(255,255,255,.3);
+      font-family:'IBM Plex Mono',monospace;
+      letter-spacing:.12em;text-transform:uppercase;margin-top:2px;
     }
-    .nav-tabs { display: flex; gap: 3px; flex: 1; }
-    .nav-tab {
-      padding: 7px 15px; border-radius: 7px;
-      cursor: pointer; font-size: 13px; font-weight: 500;
-      color: rgba(255,255,255,.55); transition: all .18s;
-      border: 1px solid transparent; white-space: nowrap;
+    .sb-nav{flex:1;padding:10px 10px;overflow-y:auto;overflow-x:hidden;}
+    .sb-section{
+      font-size:9.5px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:rgba(255,255,255,.22);
+      padding:14px 10px 6px;
     }
-    .nav-tab:hover { color: rgba(255,255,255,.9); background: rgba(255,255,255,.07); }
-    .nav-tab.active {
-      color: #fff;
-      background: rgba(255,255,255,.14);
-      border-color: rgba(255,255,255,.15);
+    .sb-item {
+      display:flex;align-items:center;gap:10px;
+      padding:9px 12px;border-radius:8px;cursor:pointer;
+      color:var(--sb-text);font-size:13px;font-weight:500;
+      transition:background .15s,color .15s;
+      border:1px solid transparent;margin-bottom:2px;
+      user-select:none;
     }
-    .header-right { display: flex; align-items: center; gap: 14px; margin-left: auto; }
-    .ai-status {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 11px; font-family: 'IBM Plex Mono', monospace;
-      color: #34d399;
+    .sb-item svg{flex-shrink:0;color:var(--sb-icon);transition:color .15s;}
+    .sb-item:hover{background:rgba(255,255,255,.06);color:var(--sb-text-h);}
+    .sb-item:hover svg{color:rgba(255,255,255,.65);}
+    .sb-item.active{
+      background:var(--sb-active);color:#fff;
+      border-color:rgba(255,255,255,.1);
     }
-    .ai-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #34d399;
-      animation: pulse 2s infinite;
+    .sb-item.active svg{color:var(--sb-icon-a);}
+    .sb-footer{
+      padding:14px 16px;
+      border-top:1px solid var(--sb-border);
+      flex-shrink:0;
     }
-    @keyframes pulse {
-      0%,100%{opacity:1;transform:scale(1);}
-      50%{opacity:.4;transform:scale(.8);}
+    .sb-ai-status{
+      display:flex;align-items:center;gap:8px;
+      font-size:10.5px;font-family:'IBM Plex Mono',monospace;
+      color:#34d399;margin-bottom:12px;
     }
-    .user-avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #3b82f6);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; cursor: pointer; color: #fff;
+    .ai-dot{
+      width:6px;height:6px;border-radius:50%;
+      background:#34d399;animation:pulse 2s infinite;flex-shrink:0;
     }
+    .sb-user{display:flex;align-items:center;gap:10px;}
+    .user-avatar{
+      width:32px;height:32px;border-radius:8px;
+      background:linear-gradient(135deg,#6366f1,#3b82f6);
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+    }
+    .sb-user-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.82);}
+    .sb-user-role{font-size:10px;color:rgba(255,255,255,.32);margin-top:1px;}
 
-    /* ── LAYOUT ──────────────────────────── */
-    .main { padding-top: 60px; min-height: 100vh; }
-    .page { display: none; padding: 28px 28px 56px; max-width: 1440px; margin: 0 auto; }
-    .page.active { display: block; animation: fadeIn .25s ease; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);} }
+    /* Mobile overlay */
+    .sb-overlay{
+      display:none;position:fixed;inset:0;
+      background:rgba(0,0,0,.52);z-index:190;
+      backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+    }
+    .sb-overlay.show{display:block;}
 
-    /* ── SECTION HEADER ──────────────────── */
-    .sec-header {
-      display: flex; align-items: flex-start;
-      justify-content: space-between; margin-bottom: 24px;
-      flex-wrap: wrap; gap: 12px;
+    /* ═══════════════════════════════════════════════════════════
+       TOPBAR
+    ═══════════════════════════════════════════════════════════ */
+    .topbar{
+      position:fixed;top:0;left:var(--sb-w);right:0;
+      height:var(--tb-h);
+      background:var(--tb-bg);
+      backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--tb-border);
+      z-index:100;
+      display:flex;align-items:center;
+      padding:0 24px;gap:12px;
+      transition:left .26s cubic-bezier(.4,0,.2,1);
     }
-    .sec-title { font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -.02em; }
-    .sec-sub { font-size: 12px; color: var(--text-3); margin-top: 3px; }
+    .tb-hamburger{
+      display:none;
+      width:32px;height:32px;border:none;
+      background:transparent;cursor:pointer;
+      border-radius:6px;color:var(--text-2);
+      align-items:center;justify-content:center;
+      transition:background .15s;flex-shrink:0;
+    }
+    .tb-hamburger:hover{background:var(--bg-alt);}
+    .tb-breadcrumb{
+      display:flex;align-items:center;gap:6px;
+      font-size:13px;color:var(--text-2);
+    }
+    .tb-bc-app{font-weight:500;}
+    .tb-bc-sep{color:var(--text-3);font-size:15px;line-height:1;}
+    .tb-bc-current{font-weight:700;color:var(--text);}
+    .tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+    .date-chip{
+      font-size:11.5px;font-family:'IBM Plex Mono',monospace;
+      color:var(--text-3);padding:5px 10px;
+      background:var(--surface-2);border:1px solid var(--border);
+      border-radius:6px;white-space:nowrap;
+    }
+    .theme-toggle{
+      width:34px;height:34px;
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:8px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      color:var(--text-2);
+      transition:background .15s,color .15s,border-color .15s;
+    }
+    .theme-toggle:hover{background:var(--bg-alt);color:var(--text);border-color:var(--border-b);}
+    /* Show sun in dark mode, moon in light mode */
+    .icon-sun{display:none;}
+    .icon-moon{display:flex;}
+    [data-theme="dark"] .icon-sun{display:flex;}
+    [data-theme="dark"] .icon-moon{display:none;}
 
-    /* ── KPI GRID ────────────────────────── */
-    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 22px; }
-    .kpi-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 20px 20px 16px;
-      position: relative; overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04);
-      transition: box-shadow .2s, transform .2s;
+    /* ═══════════════════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════════════════ */
+    .main-wrap{
+      margin-left:var(--sb-w);
+      padding-top:var(--tb-h);
+      min-height:100vh;
+      transition:margin-left .26s cubic-bezier(.4,0,.2,1);
     }
-    .kpi-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
-    .kpi-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    }
-    .kpi-card.blue::before  { background: linear-gradient(90deg, var(--blue), #60a5fa); }
-    .kpi-card.green::before { background: linear-gradient(90deg, var(--green), #34d399); }
-    .kpi-card.amber::before { background: linear-gradient(90deg, var(--amber), #fbbf24); }
-    .kpi-card.purple::before{ background: linear-gradient(90deg, var(--purple), #8b5cf6); }
-    .kpi-label {
-      font-size: 10px; font-weight: 700; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--text-3); margin-bottom: 14px;
-    }
-    .kpi-val {
-      font-size: 34px; font-weight: 800;
-      font-family: 'IBM Plex Mono', monospace; line-height: 1; margin-bottom: 8px;
-    }
-    .kpi-card.blue  .kpi-val { color: var(--blue); }
-    .kpi-card.green .kpi-val { color: var(--green); }
-    .kpi-card.amber .kpi-val { color: var(--amber); }
-    .kpi-card.purple .kpi-val { color: var(--purple); }
-    .kpi-trend { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 4px; }
-    .up   { color: var(--green); font-weight: 600; }
-    .down { color: var(--red); font-weight: 600; }
-    .kpi-icon {
-      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-      font-size: 42px; opacity: .07; pointer-events: none;
-    }
+    .page{display:none;padding:28px 28px 64px;max-width:1400px;}
+    .page.active{display:block;animation:fadeIn .22s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-    /* ── CARDS ───────────────────────────── */
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 22px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    /* ═══════════════════════════════════════════════════════════
+       SECTION HEADER
+    ═══════════════════════════════════════════════════════════ */
+    .sec-header{
+      display:flex;align-items:flex-start;
+      justify-content:space-between;margin-bottom:28px;
+      flex-wrap:wrap;gap:12px;
     }
-    .chart-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-    .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-    .chart-title  { font-size: 14px; font-weight: 700; color: var(--text); }
-    .badge {
-      font-size: 10px; font-family: 'IBM Plex Mono', monospace;
-      padding: 3px 8px; border-radius: 5px; font-weight: 700;
-    }
-    .badge-ai   { background: var(--cyan-lt); color: var(--cyan); border: 1px solid #a5f3fc; }
-    .badge-live { background: var(--green-lt); color: var(--green); border: 1px solid #6ee7b7; }
+    .sec-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1.2;}
+    .sec-sub{font-size:13px;color:var(--text-3);margin-top:4px;}
 
-    /* ── ALERTS ──────────────────────────── */
-    .alert-item {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 13px 0; border-bottom: 1px solid var(--border);
+    /* ═══════════════════════════════════════════════════════════
+       KPI GRID
+    ═══════════════════════════════════════════════════════════ */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+    .kpi-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;padding:20px 20px 18px;
+      position:relative;overflow:hidden;
+      box-shadow:var(--shadow-sm);
+      transition:box-shadow .2s,transform .2s;
     }
-    .alert-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .adot {
-      width: 8px; height: 8px; border-radius: 50%;
-      margin-top: 5px; flex-shrink: 0;
+    .kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+    .kpi-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      border-radius:14px 14px 0 0;
     }
-    .adot.danger { background: var(--red); animation: pulse 1.5s infinite; }
-    .adot.warn   { background: var(--amber); }
-    .adot.info   { background: var(--blue); }
-    .adot.ok     { background: var(--green); }
-    .a-title { font-size: 13px; font-weight: 600; color: var(--text); }
-    .a-desc  { font-size: 12px; color: var(--text-2); margin-top: 2px; line-height: 1.6; }
-    .a-time  { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-3); white-space: nowrap; }
+    .kpi-card.blue::before  {background:linear-gradient(90deg,var(--blue),#60a5fa);}
+    .kpi-card.green::before {background:linear-gradient(90deg,var(--green),#34d399);}
+    .kpi-card.amber::before {background:linear-gradient(90deg,var(--amber),#fbbf24);}
+    .kpi-card.purple::before{background:linear-gradient(90deg,var(--purple),#8b5cf6);}
+    .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+    .kpi-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);}
+    .kpi-icon-wrap{
+      width:36px;height:36px;border-radius:9px;
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
+    }
+    .kpi-card.blue   .kpi-icon-wrap{background:var(--blue-lt);color:var(--blue);}
+    .kpi-card.green  .kpi-icon-wrap{background:var(--green-lt);color:var(--green);}
+    .kpi-card.amber  .kpi-icon-wrap{background:var(--amber-lt);color:var(--amber);}
+    .kpi-card.purple .kpi-icon-wrap{background:var(--purple-lt);color:var(--purple);}
+    .kpi-val{
+      font-size:36px;font-weight:800;
+      font-family:'IBM Plex Mono',monospace;line-height:1;margin-bottom:8px;
+    }
+    .kpi-card.blue  .kpi-val{color:var(--blue);}
+    .kpi-card.green .kpi-val{color:var(--green);}
+    .kpi-card.amber .kpi-val{color:var(--amber);}
+    .kpi-card.purple .kpi-val{color:var(--purple);}
+    .kpi-trend{font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:4px;}
+    .up  {color:var(--green);font-weight:600;}
+    .down{color:var(--red);font-weight:600;}
 
-    /* ── BUTTONS ─────────────────────────── */
-    .btn {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 8px 16px; border-radius: 8px;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      border: none; transition: all .18s; white-space: nowrap;
-      font-family: 'Inter', sans-serif;
+    /* ═══════════════════════════════════════════════════════════
+       CARDS
+    ═══════════════════════════════════════════════════════════ */
+    .card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;padding:22px;
+      box-shadow:var(--shadow-sm);
     }
-    .btn-primary {
-      background: var(--blue);
-      color: #fff;
-      box-shadow: 0 1px 3px rgba(37,99,235,.3);
+    .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+    .chart-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:18px;flex-wrap:wrap;gap:8px;
     }
-    .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 14px rgba(37,99,235,.4); transform: translateY(-1px); }
-    .btn-ghost {
-      background: var(--surface); color: var(--text-2);
-      border: 1px solid var(--border);
+    .chart-title{font-size:14px;font-weight:700;color:var(--text);}
+    .badge{
+      font-size:10px;font-family:'IBM Plex Mono',monospace;
+      padding:3px 8px;border-radius:5px;font-weight:700;
     }
-    .btn-ghost:hover { color: var(--text); border-color: var(--border-b); background: var(--surface-2); }
-    .btn-ai {
-      background: linear-gradient(135deg, #1d4ed8 0%, var(--purple) 100%);
-      color: #fff;
-      box-shadow: 0 1px 3px rgba(124,58,237,.25);
-      position: relative; overflow: hidden;
-    }
-    .btn-ai::after {
-      content: ''; position: absolute; top: -50%; left: -60%;
-      width: 60%; height: 200%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
-      animation: shimmer 2.5s infinite;
-    }
-    @keyframes shimmer {
-      0%  { left: -60%; }
-      100%{ left: 120%; }
-    }
-    .btn-ai:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(124,58,237,.38); }
-    .btn-ai:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .badge-ai  {background:var(--cyan-lt);color:var(--cyan);border:1px solid rgba(8,145,178,.3);}
+    .badge-live{background:var(--green-lt);color:var(--green);border:1px solid rgba(5,150,105,.3);}
 
-    /* ── FORM CONTROLS ───────────────────── */
-    .form-select {
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); padding: 8px 12px; border-radius: 8px;
-      font-size: 13px; font-family: 'Inter', sans-serif;
-      cursor: pointer; appearance: none; -webkit-appearance: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    /* ═══════════════════════════════════════════════════════════
+       ALERTS
+    ═══════════════════════════════════════════════════════════ */
+    .alert-item{
+      display:flex;align-items:flex-start;gap:12px;
+      padding:14px 0;border-bottom:1px solid var(--border);
     }
-    .form-select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .alert-item:last-child{border-bottom:none;padding-bottom:0;}
+    .adot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+    .adot.danger{background:var(--red);animation:pulse 1.5s infinite;}
+    .adot.warn  {background:var(--amber);}
+    .adot.info  {background:var(--blue);}
+    .adot.ok    {background:var(--green);}
+    .a-title{font-size:13px;font-weight:600;color:var(--text);}
+    .a-desc {font-size:12px;color:var(--text-2);margin-top:3px;line-height:1.65;}
+    .a-time {font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-3);white-space:nowrap;}
 
-    /* ── AI LOADING INDICATOR ────────────── */
-    .ai-loading { display: none; align-items: center; gap: 8px; font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--cyan); }
-    .ai-loading.show { display: flex; }
-    .ai-spin {
-      width: 15px; height: 15px;
-      border: 2px solid rgba(8,145,178,.18);
-      border-top-color: var(--cyan);
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
+    /* ═══════════════════════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════════════════════ */
+    .btn{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 16px;border-radius:8px;
+      font-size:13px;font-weight:600;cursor:pointer;
+      border:none;transition:all .18s;white-space:nowrap;
+      font-family:'Inter',sans-serif;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn svg{flex-shrink:0;}
+    .btn-primary{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(37,99,235,.3);}
+    .btn-primary:hover{background:#1d4ed8;box-shadow:0 4px 14px rgba(37,99,235,.4);transform:translateY(-1px);}
+    .btn-ghost{background:var(--surface);color:var(--text-2);border:1px solid var(--border);}
+    .btn-ghost:hover{color:var(--text);border-color:var(--border-b);background:var(--surface-2);}
+    .btn-ai{
+      background:linear-gradient(135deg,#1d4ed8 0%,var(--purple) 100%);
+      color:#fff;box-shadow:0 1px 3px rgba(124,58,237,.25);
+      position:relative;overflow:hidden;
+    }
+    .btn-ai::after{
+      content:'';position:absolute;top:-50%;left:-60%;
+      width:60%;height:200%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+      animation:shimmer 2.5s infinite;
+    }
+    @keyframes shimmer{0%{left:-60%}100%{left:120%}}
+    .btn-ai:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(124,58,237,.38);}
+    .btn-ai:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 
-    /* ── FORECAST PAGE ───────────────────── */
-    .fc-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
-    .insight-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 20px; }
-    .insight-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    /* ═══════════════════════════════════════════════════════════
+       FORM CONTROLS
+    ═══════════════════════════════════════════════════════════ */
+    .form-select{
+      background:var(--surface);border:1px solid var(--border);
+      color:var(--text);padding:8px 12px;border-radius:8px;
+      font-size:13px;font-family:'Inter',sans-serif;
+      cursor:pointer;appearance:none;-webkit-appearance:none;
+      box-shadow:0 1px 2px rgba(0,0,0,.04);
     }
-    .ins-icon  { font-size: 26px; margin-bottom: 10px; }
-    .ins-val   { font-size: 26px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; color: var(--blue); margin-bottom: 4px; }
-    .ins-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .ins-desc  { font-size: 12px; color: var(--text-2); line-height: 1.65; }
-    .fc-meta   { font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--text-3); margin-left: auto; }
+    .form-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
 
-    /* ── SCHEDULE PAGE ───────────────────── */
-    .eff-row  { display: flex; align-items: stretch; gap: 14px; margin-bottom: 20px; }
-    .eff-item {
-      flex: 1; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 18px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    /* ═══════════════════════════════════════════════════════════
+       AI LOADING
+    ═══════════════════════════════════════════════════════════ */
+    .ai-loading{display:none;align-items:center;gap:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--cyan);}
+    .ai-loading.show{display:flex;}
+    .ai-spin{
+      width:15px;height:15px;
+      border:2px solid rgba(8,145,178,.18);
+      border-top-color:var(--cyan);border-radius:50%;
+      animation:spin .7s linear infinite;
     }
-    .eff-item.wide { flex: 2; }
-    .eff-lbl  { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
-    .eff-num  { font-size: 30px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
-    .eff-before .eff-num { color: var(--amber); }
-    .eff-after  .eff-num { color: var(--text-3); }
-    .eff-after.done .eff-num { color: var(--green); }
-    .eff-bar  { height: 5px; border-radius: 3px; background: var(--bg-alt); margin-top: 10px; overflow: hidden; }
-    .eff-fill { height: 100%; border-radius: 3px; transition: width .9s cubic-bezier(.4,0,.2,1); }
-    .eff-before .eff-fill { background: var(--amber); }
-    .eff-after  .eff-fill { background: var(--green); }
-    .eff-arrow { font-size: 22px; color: var(--text-3); flex-shrink: 0; display: flex; align-items: center; }
+    @keyframes spin{to{transform:rotate(360deg);}}
 
-    /* progress bar */
-    .optim-wrap { display: none; margin-bottom: 20px; }
-    .optim-wrap.show { display: block; }
-    .optim-bg { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 100px; height: 8px; overflow: hidden; }
-    .optim-fill {
-      height: 100%; width: 0%; border-radius: 100px;
-      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--purple), var(--blue));
-      background-size: 300% 100%;
-      animation: grd 2s linear infinite;
-      transition: width .15s linear;
+    /* ═══════════════════════════════════════════════════════════
+       FORECAST PAGE — EMPTY STATE
+    ═══════════════════════════════════════════════════════════ */
+    .fc-controls{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+    .fc-meta{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text-3);margin-left:auto;}
+    .fc-chart-wrap{position:relative;}
+    .fc-empty{
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:14px;
+      background:var(--surface);border-radius:8px;
+      z-index:10;transition:opacity .3s,visibility .3s;
     }
-    @keyframes grd { 0%{background-position:0%}100%{background-position:300%} }
-    .optim-lbl { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--blue); margin-top: 7px; }
+    .fc-empty.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+    .fc-empty-icon{
+      width:56px;height:56px;border-radius:16px;
+      background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(124,58,237,.1));
+      display:flex;align-items:center;justify-content:center;
+      color:var(--blue);border:1px solid rgba(37,99,235,.15);
+    }
+    .fc-empty-title{font-size:15px;font-weight:700;color:var(--text);}
+    .fc-empty-sub{font-size:12px;color:var(--text-3);text-align:center;max-width:260px;line-height:1.6;}
+    .insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;}
+    .insight-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;padding:22px;box-shadow:var(--shadow-sm);
+    }
+    .ins-icon-wrap{
+      width:40px;height:40px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+    }
+    .ins-icon-wrap.blue  {background:var(--blue-lt);color:var(--blue);}
+    .ins-icon-wrap.amber {background:var(--amber-lt);color:var(--amber);}
+    .ins-icon-wrap.green {background:var(--green-lt);color:var(--green);}
+    .ins-val  {font-size:26px;font-weight:800;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+    .ins-label{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;}
+    .ins-desc {font-size:12px;color:var(--text-2);line-height:1.65;}
 
-    /* Gantt */
-    .gantt-wrap { overflow-x: auto; }
-    .gantt-days { display: flex; margin-left: 148px; margin-bottom: 8px; }
-    .g-day { flex: 1; min-width: 88px; text-align: center; font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text-3); font-weight: 500; }
-    .gantt-row { display: flex; align-items: center; margin-bottom: 10px; }
-    .g-lbl { width: 148px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--text-2); padding-right: 14px; }
-    .g-lbl small { display: block; font-size: 10px; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; font-weight: 400; margin-top: 1px; }
-    .g-track {
-      flex: 1; display: flex; height: 46px;
-      background: var(--surface-2); border-radius: 6px; overflow: hidden;
-      border: 1px solid var(--border);
+    /* ═══════════════════════════════════════════════════════════
+       SCHEDULE PAGE
+    ═══════════════════════════════════════════════════════════ */
+    .eff-row{display:flex;align-items:stretch;gap:14px;margin-bottom:20px;}
+    .eff-item{
+      flex:1;background:var(--surface);border:1px solid var(--border);
+      border-radius:14px;padding:20px;box-shadow:var(--shadow-sm);
     }
-    .g-block {
-      height: 100%; display: flex; align-items: center;
-      padding: 0 10px; font-size: 11px; font-weight: 700;
-      white-space: nowrap; cursor: pointer; transition: filter .2s;
-      border-right: 1px solid rgba(255,255,255,.6);
-    }
-    .g-block:last-child { border-right: none; }
-    .g-block:hover { filter: brightness(.94); }
-    .pa { background: rgba(37,99,235,.14);  color: #1d4ed8; border-left: 3px solid #3b82f6; }
-    .pb { background: rgba(124,58,237,.13); color: #6d28d9; border-left: 3px solid #8b5cf6; }
-    .pc { background: rgba(8,145,178,.13);  color: #0e7490; border-left: 3px solid #06b6d4; }
-    .pd { background: rgba(5,150,105,.13);  color: #047857; border-left: 3px solid #10b981; }
-    .ps { background: rgba(217,119,6,.1);   color: #b45309; border-left: 3px solid #f59e0b; font-style: italic; }
-    .pi { background: rgba(148,163,184,.1); color: #94a3b8; font-size: 10px; }
-    .gantt-legend { display: flex; gap: 18px; margin-top: 18px; flex-wrap: wrap; }
-    .leg-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); }
-    .leg-dot  { width: 10px; height: 10px; border-radius: 3px; }
+    .eff-item.wide{flex:2;}
+    .eff-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;}
+    .eff-num{font-size:32px;font-weight:800;font-family:'IBM Plex Mono',monospace;}
+    .eff-before .eff-num{color:var(--amber);}
+    .eff-after  .eff-num{color:var(--text-3);}
+    .eff-after.done .eff-num{color:var(--green);}
+    .eff-bar {height:6px;border-radius:4px;background:var(--bg-alt);margin-top:12px;overflow:hidden;}
+    .eff-fill{height:100%;border-radius:4px;transition:width .9s cubic-bezier(.4,0,.2,1);}
+    .eff-before .eff-fill{background:var(--amber);}
+    .eff-after  .eff-fill{background:var(--green);}
+    .eff-arrow{flex-shrink:0;display:flex;align-items:center;color:var(--text-3);}
 
-    /* ── ORDERS TABLE ────────────────────── */
-    .orders-top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-    .search-wrap { position: relative; }
-    .search-ico  { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
-    .search-inp  {
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); padding: 8px 12px 8px 34px;
-      border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif; width: 230px;
-      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    /* Progress bar */
+    .optim-wrap{display:none;margin-bottom:20px;}
+    .optim-wrap.show{display:block;}
+    .optim-bg{background:var(--bg-alt);border:1px solid var(--border);border-radius:100px;height:8px;overflow:hidden;}
+    .optim-fill{
+      height:100%;width:0%;border-radius:100px;
+      background:linear-gradient(90deg,var(--blue),var(--cyan),var(--purple),var(--blue));
+      background-size:300% 100%;
+      animation:grd 2s linear infinite;
+      transition:width .15s linear;
     }
-    .search-inp:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-    .ftabs { display: flex; gap: 4px; }
-    .ftab {
-      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
-      cursor: pointer; border: 1px solid var(--border); color: var(--text-2);
-      background: var(--surface); transition: all .15s; font-family: 'Inter', sans-serif;
-    }
-    .ftab.active { background: var(--blue-lt); color: var(--blue); border-color: #93c5fd; font-weight: 600; }
-    .tbl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      padding: 12px 16px; text-align: left;
-      font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--text-3); background: var(--surface-2);
-      border-bottom: 1px solid var(--border); white-space: nowrap;
-    }
-    tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #f8faff; }
-    tbody td { padding: 13px 16px; font-size: 13px; color: var(--text); white-space: nowrap; }
-    .oid { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-2); }
-    .sbadge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 700;
-    }
-    .s-urg  { background:var(--red-lt);    color:var(--red);    border:1px solid #fca5a5; }
-    .s-prog { background:var(--blue-lt);   color:var(--blue);   border:1px solid #93c5fd; }
-    .s-plan { background:var(--surface-2); color:var(--text-2); border:1px solid var(--border); }
-    .s-done { background:var(--green-lt);  color:var(--green);  border:1px solid #6ee7b7; }
-    .ai-score { display: inline-flex; align-items: center; gap: 8px; }
-    .sc-bar { width: 50px; height: 5px; background: var(--bg-alt); border-radius: 3px; overflow: hidden; }
-    .sc-fill { height: 100%; border-radius: 3px; }
-    .score-hi .sc-fill { background: var(--red); }
-    .score-hi .sc-n    { color: var(--red); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; }
-    .score-md .sc-fill { background: var(--amber); }
-    .score-md .sc-n    { color: var(--amber); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; }
-    .score-lo .sc-fill { background: var(--green); }
-    .score-lo .sc-n    { color: var(--green); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:700; }
-    .dl-urg  { color:var(--red);   font-weight:700; }
-    .dl-warn { color:var(--amber); font-weight:600; }
-    .dl-ok   { color:var(--text-2); }
+    @keyframes grd{0%{background-position:0%}100%{background-position:300%}}
+    .optim-lbl{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--blue);margin-top:8px;}
 
-    /* ── SCROLLBAR ───────────────────────── */
-    ::-webkit-scrollbar { width:5px; height:5px; }
-    ::-webkit-scrollbar-track { background:var(--bg); }
-    ::-webkit-scrollbar-thumb { background:var(--border-b); border-radius:3px; }
+    /* ── Gantt ─────────────────────────────────────────── */
+    .gantt-wrap{overflow-x:auto;}
+    .gantt-days{display:flex;margin-left:148px;margin-bottom:0;}
+    .g-day{
+      flex:1;min-width:88px;text-align:center;
+      font-size:11px;font-family:'IBM Plex Mono',monospace;
+      color:var(--text-3);font-weight:500;
+      padding:6px 0 8px;
+      border-bottom:1px solid var(--border);
+    }
+    /* Day column highlight on hover */
+    .gantt-row{display:flex;align-items:center;margin-bottom:8px;}
+    .g-lbl{width:148px;flex-shrink:0;font-size:12px;font-weight:600;color:var(--text-2);padding-right:14px;}
+    .g-lbl small{display:block;font-size:10px;color:var(--text-3);font-family:'IBM Plex Mono',monospace;font-weight:400;margin-top:1px;}
+    .g-track{
+      flex:1;display:flex;height:46px;
+      background:var(--surface-2);
+      border-radius:6px;overflow:hidden;
+      border:1px solid var(--border);
+      position:relative;
+      /* Vertical day-grid lines at 20% intervals (5 days) */
+      background-image:
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent calc(20% - 1px),
+          var(--border) calc(20% - 1px),
+          var(--border) 20%
+        );
+    }
+    .g-block{
+      height:100%;display:flex;align-items:center;
+      padding:0 10px;font-size:11px;font-weight:700;
+      white-space:nowrap;cursor:pointer;
+      transition:filter .18s;
+      border-right:1px solid rgba(255,255,255,.5);
+      position:relative;z-index:1;
+    }
+    .g-block:last-child{border-right:none;}
+    .g-block:hover{filter:brightness(.91);}
+    .pa{background:rgba(37,99,235,.16); color:#1d4ed8;border-left:3px solid #3b82f6;}
+    .pb{background:rgba(124,58,237,.14);color:#6d28d9;border-left:3px solid #8b5cf6;}
+    .pc{background:rgba(8,145,178,.14); color:#0e7490;border-left:3px solid #06b6d4;}
+    .pd{background:rgba(5,150,105,.14); color:#047857;border-left:3px solid #10b981;}
+    .ps{background:rgba(217,119,6,.1);  color:#b45309;border-left:3px solid #f59e0b;font-style:italic;}
+    .pi{background:rgba(148,163,184,.08);color:#94a3b8;font-size:10px;}
+    .gantt-legend{
+      display:flex;gap:16px;margin-top:18px;flex-wrap:wrap;
+      padding-top:14px;border-top:1px solid var(--border);
+    }
+    .leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2);}
+    .leg-dot {width:10px;height:10px;border-radius:3px;flex-shrink:0;}
 
+    /* ═══════════════════════════════════════════════════════════
+       ORDERS TABLE
+    ═══════════════════════════════════════════════════════════ */
+    .orders-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+    .search-wrap{position:relative;}
+    .search-ico{
+      position:absolute;left:10px;top:50%;transform:translateY(-50%);
+      color:var(--text-3);pointer-events:none;
+      display:flex;align-items:center;
+    }
+    .search-inp{
+      background:var(--surface);border:1px solid var(--border);
+      color:var(--text);padding:8px 12px 8px 36px;
+      border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;width:240px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04);
+    }
+    .search-inp::placeholder{color:var(--text-3);}
+    .search-inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);}
+    .ftabs{display:flex;gap:4px;}
+    .ftab{
+      padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;
+      cursor:pointer;border:1px solid var(--border);color:var(--text-2);
+      background:var(--surface);transition:all .15s;font-family:'Inter',sans-serif;
+    }
+    .ftab.active{background:var(--blue-lt);color:var(--blue);border-color:rgba(37,99,235,.35);font-weight:600;}
+    .tbl-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);}
+    table{width:100%;border-collapse:collapse;}
+    thead th{
+      padding:12px 16px;text-align:left;
+      font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--text-3);background:var(--surface-2);
+      border-bottom:1px solid var(--border);white-space:nowrap;
+    }
+    tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr:hover{background:var(--surface-2);}
+    tbody td{padding:13px 16px;font-size:13px;color:var(--text);white-space:nowrap;}
+    .oid{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-2);}
+    .sbadge{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;
+    }
+    .s-urg {background:var(--red-lt);  color:var(--red);  border:1px solid rgba(220,38,38,.3);}
+    .s-prog{background:var(--blue-lt); color:var(--blue); border:1px solid rgba(37,99,235,.3);}
+    .s-plan{background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);}
+    .s-done{background:var(--green-lt);color:var(--green);border:1px solid rgba(5,150,105,.3);}
+    .ai-score{display:inline-flex;align-items:center;gap:8px;}
+    .sc-bar {width:50px;height:5px;background:var(--bg-alt);border-radius:3px;overflow:hidden;}
+    .sc-fill{height:100%;border-radius:3px;}
+    .score-hi .sc-fill{background:var(--red);}
+    .score-hi .sc-n   {color:var(--red);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;}
+    .score-md .sc-fill{background:var(--amber);}
+    .score-md .sc-n   {color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;}
+    .score-lo .sc-fill{background:var(--green);}
+    .score-lo .sc-n   {color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;}
+    .dl-urg {color:var(--red);  font-weight:700;}
+    .dl-warn{color:var(--amber);font-weight:600;}
+    .dl-ok  {color:var(--text-2);}
+
+    /* ═══════════════════════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════════════════════ */
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
+
+    /* ═══════════════════════════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar{width:5px;height:5px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border-b);border-radius:3px;}
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════ */
+    @media(max-width:768px){
+      .sidebar{transform:translateX(calc(-1 * var(--sb-w)));box-shadow:none;}
+      .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg);}
+      .topbar{left:0;}
+      .main-wrap{margin-left:0;}
+      .tb-hamburger{display:flex;}
+    }
     @media(max-width:1100px){
-      .kpi-grid { grid-template-columns: repeat(2,1fr); }
-      .chart-grid { grid-template-columns: 1fr; }
-      .insight-grid { grid-template-columns: 1fr 1fr; }
+      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .chart-grid{grid-template-columns:1fr;}
+      .insight-grid{grid-template-columns:1fr 1fr;}
     }
     @media(max-width:720px){
-      .page { padding:16px 16px 40px; }
-      .kpi-grid { grid-template-columns: 1fr 1fr; }
-      .insight-grid { grid-template-columns: 1fr; }
-      .eff-row { flex-wrap: wrap; }
+      .page{padding:16px 16px 48px;}
+      .sec-title{font-size:22px;}
+      .kpi-grid{grid-template-columns:1fr 1fr;}
+      .insight-grid{grid-template-columns:1fr;}
+      .eff-row{flex-wrap:wrap;}
+      .eff-arrow{width:100%;justify-content:center;transform:rotate(90deg);}
+      .orders-top{flex-wrap:wrap;}
+      .search-inp{width:100%;}
+    }
+    @media(max-width:480px){
+      .kpi-grid{grid-template-columns:1fr;}
+      .ftabs{flex-wrap:wrap;}
     }
   </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ════════════════════════════════════════════════════════════ -->
-<header class="header">
-  <a class="logo" href="#">
-    <div class="logo-icon">⚛</div>
+<!-- ─── Mobile Overlay ────────────────────────────────────────────────────── -->
+<div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <a class="sb-logo" href="#">
+    <div class="sb-logo-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"/><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z"/></svg>
+    </div>
     <div>
-      <div>QScheduler <span style="color:#60a5fa">AI</span></div>
-      <div class="logo-sub">QUANTUM PRODUCTION OPTIMIZER</div>
+      <div class="sb-logo-name">QScheduler <span style="color:#60a5fa">AI</span></div>
+      <div class="sb-logo-sub">Quantum Production Optimizer</div>
     </div>
   </a>
 
-  <nav class="nav-tabs">
-    <div class="nav-tab active" onclick="showPage('dash',this)">📊 ダッシュボード</div>
-    <div class="nav-tab" onclick="showPage('fc',this)">🤖 AI需要予測</div>
-    <div class="nav-tab" onclick="showPage('sched',this)">📅 生産スケジュール</div>
-    <div class="nav-tab" onclick="showPage('orders',this)">📦 受注管理</div>
+  <nav class="sb-nav">
+    <div class="sb-section">メインメニュー</div>
+
+    <div class="sb-item active" onclick="showPage('dash',this)" data-label="ダッシュボード">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      ダッシュボード
+    </div>
+
+    <div class="sb-item" onclick="showPage('fc',this)" data-label="AI需要予測">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
+      AI需要予測
+    </div>
+
+    <div class="sb-item" onclick="showPage('sched',this)" data-label="生産スケジュール">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      生産スケジュール
+    </div>
+
+    <div class="sb-item" onclick="showPage('orders',this)" data-label="受注管理">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-8 4.5v9L12 21l8-4.5v-9L12 3z"/><path d="m12 12 8-4.5"/><path d="M12 12v9"/><path d="m12 12-8-4.5"/><path d="m16 5.25-8 4.5"/></svg>
+      受注管理
+    </div>
   </nav>
 
-  <div class="header-right">
-    <div class="ai-status"><div class="ai-dot"></div>AI ENGINE ONLINE</div>
-    <div class="user-avatar">高</div>
+  <div class="sb-footer">
+    <div class="sb-ai-status">
+      <div class="ai-dot"></div>
+      AI ENGINE ONLINE
+    </div>
+    <div class="sb-user">
+      <div class="user-avatar">高</div>
+      <div>
+        <div class="sb-user-name">高野 英孝</div>
+        <div class="sb-user-role">生産管理責任者</div>
+      </div>
+    </div>
   </div>
-</header>
+</aside>
 
-<main class="main">
+<!-- ═══ TOPBAR ════════════════════════════════════════════════════════════════ -->
+<div class="topbar">
+  <button class="tb-hamburger" onclick="toggleSidebar()" aria-label="メニュー">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="tb-breadcrumb">
+    <span class="tb-bc-app">QScheduler AI</span>
+    <span class="tb-bc-sep">›</span>
+    <span class="tb-bc-current" id="bc-current">ダッシュボード</span>
+  </div>
+  <div class="tb-right">
+    <div class="date-chip">2026-05-05（月）</div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="ダーク／ライト切替">
+      <span class="icon-moon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </span>
+      <span class="icon-sun">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </span>
+    </button>
+  </div>
+</div>
 
-<!-- ═══ PAGE 1: DASHBOARD ══════════════════════════════════════════════════ -->
+<!-- ═══ MAIN CONTENT ══════════════════════════════════════════════════════════ -->
+<main class="main-wrap">
+
+<!-- ─── PAGE 1: DASHBOARD ─────────────────────────────────────────────────── -->
 <div class="page active" id="page-dash">
   <div class="sec-header">
     <div>
       <div class="sec-title">生産管理ダッシュボード</div>
-      <div class="sec-sub">2026年5月4日（月）｜ リアルタイム更新中</div>
+      <div class="sec-sub">2026年5月5日（月）｜ リアルタイム更新中</div>
     </div>
-    <button class="btn btn-ghost" onclick="refreshDash()">🔄 データ更新</button>
+    <button class="btn btn-ghost" onclick="refreshDash()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      データ更新
+    </button>
   </div>
 
   <div class="kpi-grid">
     <div class="kpi-card blue">
-      <div class="kpi-label">本日の生産達成率</div>
+      <div class="kpi-top">
+        <div class="kpi-label">本日の生産達成率</div>
+        <div class="kpi-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+        </div>
+      </div>
       <div class="kpi-val" id="k1">—</div>
       <div class="kpi-trend"><span class="up">↑ 3.2%</span>&nbsp;昨日比</div>
-      <div class="kpi-icon">🏭</div>
     </div>
     <div class="kpi-card green">
-      <div class="kpi-label">AI予測精度（今月）</div>
+      <div class="kpi-top">
+        <div class="kpi-label">AI予測精度（今月）</div>
+        <div class="kpi-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
+        </div>
+      </div>
       <div class="kpi-val" id="k2">—</div>
       <div class="kpi-trend"><span class="up">↑ 1.1%</span>&nbsp;先月比</div>
-      <div class="kpi-icon">🤖</div>
     </div>
     <div class="kpi-card amber">
-      <div class="kpi-label">受注残（件）</div>
+      <div class="kpi-top">
+        <div class="kpi-label">受注残（件）</div>
+        <div class="kpi-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        </div>
+      </div>
       <div class="kpi-val" id="k3">—</div>
       <div class="kpi-trend"><span class="down">↑ 8件</span>&nbsp;昨日比</div>
-      <div class="kpi-icon">📦</div>
     </div>
     <div class="kpi-card purple">
-      <div class="kpi-label">設備稼働率</div>
+      <div class="kpi-top">
+        <div class="kpi-label">設備稼働率</div>
+        <div class="kpi-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+      </div>
       <div class="kpi-val" id="k4">—</div>
       <div class="kpi-trend"><span class="down">↓ 2.1%</span>&nbsp;昨日比</div>
-      <div class="kpi-icon">⚙️</div>
     </div>
   </div>
 
@@ -487,7 +784,7 @@
     <div class="alert-item">
       <div class="adot danger"></div>
       <div style="flex:1">
-        <div class="a-title">⚠️ ライン2 稼働率低下を検知</div>
+        <div class="a-title">ライン2 稼働率低下を検知</div>
         <div class="a-desc">AIがプレス成形ライン2の稼働率が前時間比12%低下していることを検知。予防保全の実施を推奨します。</div>
       </div>
       <div class="a-time">10分前</div>
@@ -495,7 +792,7 @@
     <div class="alert-item">
       <div class="adot warn"></div>
       <div style="flex:1">
-        <div class="a-title">📈 6月の需要急増をAIが予測</div>
+        <div class="a-title">6月の需要急増をAIが予測</div>
         <div class="a-desc">AI需要予測エンジンが6月の製品A受注を前月比+23%と予測。生産計画の前倒しを検討してください。</div>
       </div>
       <div class="a-time">1時間前</div>
@@ -503,7 +800,7 @@
     <div class="alert-item">
       <div class="adot info"></div>
       <div style="flex:1">
-        <div class="a-title">📅 スケジュール最適化が利用可能</div>
+        <div class="a-title">スケジュール最適化が利用可能</div>
         <div class="a-desc">来週のスケジュールに最適化案があります。採用すると稼働率が68%→89%に改善し、生産量+14%が見込まれます。</div>
       </div>
       <div class="a-time">2時間前</div>
@@ -511,7 +808,7 @@
     <div class="alert-item">
       <div class="adot ok"></div>
       <div style="flex:1">
-        <div class="a-title">✅ 製品B 月次目標達成</div>
+        <div class="a-title">製品B 月次目標達成</div>
         <div class="a-desc">製品B（アルミダイカスト部品）の5月目標1,200個を本日時点で達成しました。</div>
       </div>
       <div class="a-time">昨日</div>
@@ -519,7 +816,7 @@
   </div>
 </div>
 
-<!-- ═══ PAGE 2: AI DEMAND FORECAST ════════════════════════════════════════ -->
+<!-- ─── PAGE 2: AI DEMAND FORECAST ───────────────────────────────────────── -->
 <div class="page" id="page-fc">
   <div class="sec-header">
     <div>
@@ -528,7 +825,10 @@
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="ai-loading" id="fc-loading"><div class="ai-spin"></div>AIモデル推論中...</div>
-      <button class="btn btn-ai" id="fc-btn" onclick="runForecast()">🧠 AIを再分析</button>
+      <button class="btn btn-ai" id="fc-btn" onclick="runForecast()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
+        AIを再分析
+      </button>
     </div>
   </div>
 
@@ -570,24 +870,44 @@
         </span>
       </div>
     </div>
-    <canvas id="fcChart" height="240"></canvas>
+    <!-- Empty state overlay -->
+    <div class="fc-chart-wrap">
+      <div class="fc-empty" id="fc-empty">
+        <div class="fc-empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/></svg>
+        </div>
+        <div class="fc-empty-title">AI分析の準備完了</div>
+        <div class="fc-empty-sub">「AIを再分析」ボタンを押すと、LSTMモデルが最新データを解析し需要予測チャートを生成します</div>
+        <button class="btn btn-ai" onclick="runForecast()" style="margin-top:4px">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          分析を実行
+        </button>
+      </div>
+      <canvas id="fcChart" height="240"></canvas>
+    </div>
   </div>
 
   <div class="insight-grid">
     <div class="insight-card">
-      <div class="ins-icon">📈</div>
-      <div class="ins-val">+18.2%</div>
+      <div class="ins-icon-wrap blue">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="ins-val" style="color:var(--blue)">+18.2%</div>
       <div class="ins-label">来月（6月）需要増加予測</div>
       <div class="ins-desc">前年同月比・季節性トレンドを加味したAI予測。製造業全体の設備投資回復が主因と分析。</div>
     </div>
     <div class="insight-card">
-      <div class="ins-icon">⚠️</div>
+      <div class="ins-icon-wrap amber">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
       <div class="ins-val" style="color:var(--amber)">7月下旬</div>
       <div class="ins-label">需要ピーク到達予測</div>
       <div class="ins-desc">今期最大需要ピークが7月下旬に到来。7月1日までに生産能力120%確保を推奨します。</div>
     </div>
     <div class="insight-card">
-      <div class="ins-icon">📦</div>
+      <div class="ins-icon-wrap green">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-8 4.5v9L12 21l8-4.5v-9L12 3z"/><path d="m12 12 8-4.5"/><path d="M12 12v9"/><path d="m12 12-8-4.5"/><path d="m16 5.25-8 4.5"/></svg>
+      </div>
       <div class="ins-val" style="color:var(--green)">2,340個</div>
       <div class="ins-label">AI最適在庫レコメンド</div>
       <div class="ins-desc">調達リードタイム8日・需要変動σ=±12%を考慮した最適在庫水準。現在比+450個の積み増しを推奨。</div>
@@ -595,7 +915,7 @@
   </div>
 </div>
 
-<!-- ═══ PAGE 3: PRODUCTION SCHEDULE ═══════════════════════════════════════ -->
+<!-- ─── PAGE 3: PRODUCTION SCHEDULE ──────────────────────────────────────── -->
 <div class="page" id="page-sched">
   <div class="sec-header">
     <div>
@@ -603,27 +923,38 @@
       <div class="sec-sub">AIが設備稼働率・納期・段取りコストを同時最適化</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button class="btn btn-ghost">＜ 前週</button>
-      <span style="font-size:13px;font-weight:700;padding:0 6px;color:var(--navy)">2026年5月 第2週</span>
-      <button class="btn btn-ghost">次週 ＞</button>
-      <button class="btn btn-ai" id="opt-btn" onclick="runOpt()">⚛ AI最適化実行</button>
+      <button class="btn btn-ghost">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        前週
+      </button>
+      <span style="font-size:13px;font-weight:700;padding:0 6px;color:var(--text)">2026年5月 第2週</span>
+      <button class="btn btn-ghost">
+        次週
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="btn btn-ai" id="opt-btn" onclick="runOpt()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"/><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z"/></svg>
+        AI最適化実行
+      </button>
     </div>
   </div>
 
-  <!-- progress bar -->
+  <!-- Progress bar -->
   <div class="optim-wrap" id="opt-wrap">
     <div class="optim-bg"><div class="optim-fill" id="opt-bar"></div></div>
     <div class="optim-lbl" id="opt-lbl">量子最適化アルゴリズム実行中... 0%</div>
   </div>
 
-  <!-- efficiency -->
+  <!-- Efficiency metrics -->
   <div class="eff-row">
     <div class="eff-item eff-before">
       <div class="eff-lbl">最適化前 設備稼働率</div>
       <div class="eff-num">68%</div>
       <div class="eff-bar"><div class="eff-fill" style="width:68%"></div></div>
     </div>
-    <div class="eff-arrow">→</div>
+    <div class="eff-arrow">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
     <div class="eff-item eff-after" id="eff-after">
       <div class="eff-lbl">AI最適化後 設備稼働率</div>
       <div class="eff-num" id="eff-val">—</div>
@@ -639,11 +970,12 @@
 
   <!-- Gantt -->
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div class="chart-title">週間ガントチャート</div>
       <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-3)">05/05（月）〜 05/09（金）</div>
     </div>
     <div class="gantt-wrap">
+      <!-- Day header -->
       <div class="gantt-days">
         <div class="g-day">5/5（月）</div>
         <div class="g-day">5/6（火）</div>
@@ -652,8 +984,8 @@
         <div class="g-day">5/9（金）</div>
       </div>
 
-      <!-- BEFORE -->
-      <div id="g-before">
+      <!-- BEFORE optimization -->
+      <div id="g-before" style="margin-top:10px">
         <div class="gantt-row">
           <div class="g-lbl">ライン1<small>精密加工</small></div>
           <div class="g-track">
@@ -691,8 +1023,8 @@
         </div>
       </div>
 
-      <!-- AFTER (hidden) -->
-      <div id="g-after" style="display:none">
+      <!-- AFTER optimization (hidden) -->
+      <div id="g-after" style="display:none;margin-top:10px">
         <div class="gantt-row">
           <div class="g-lbl">ライン1<small>精密加工</small></div>
           <div class="g-track">
@@ -737,27 +1069,32 @@
   </div>
 </div>
 
-<!-- ═══ PAGE 4: ORDERS ════════════════════════════════════════════════════ -->
+<!-- ─── PAGE 4: ORDERS ────────────────────────────────────────────────────── -->
 <div class="page" id="page-orders">
   <div class="sec-header">
     <div>
       <div class="sec-title">受注管理</div>
       <div class="sec-sub">AIが納期逼迫度・ライン適合性をスコアリング — 47件受注中</div>
     </div>
-    <button class="btn btn-primary">＋ 新規受注登録</button>
+    <button class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      新規受注登録
+    </button>
   </div>
 
   <div class="orders-top">
     <div class="search-wrap">
-      <span class="search-ico">🔍</span>
+      <span class="search-ico">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
       <input class="search-inp" type="text" placeholder="受注番号・顧客名で検索">
     </div>
     <div class="ftabs" id="ftabs">
       <button class="ftab active" onclick="setFtab(this)">すべて</button>
-      <button class="ftab" onclick="setFtab(this)">🔴 緊急</button>
-      <button class="ftab" onclick="setFtab(this)">🔵 生産中</button>
-      <button class="ftab" onclick="setFtab(this)">⬜ 計画中</button>
-      <button class="ftab" onclick="setFtab(this)">✅ 完了</button>
+      <button class="ftab" onclick="setFtab(this)">緊急</button>
+      <button class="ftab" onclick="setFtab(this)">生産中</button>
+      <button class="ftab" onclick="setFtab(this)">計画中</button>
+      <button class="ftab" onclick="setFtab(this)">完了</button>
     </div>
     <div style="margin-left:auto;font-size:12px;color:var(--text-2)">47件中 10件表示</div>
   </div>
@@ -774,71 +1111,71 @@
         <tr>
           <td><span class="oid">ORD-2605-001</span></td>
           <td>株式会社田中製作所</td><td>精密部品 X-200</td><td><b>850</b>個</td>
-          <td><span class="dl-urg">5/12 ⚠️</span></td>
-          <td><span class="sbadge s-urg">🔴 緊急</span></td>
+          <td><span class="dl-urg">5/12 ⚠</span></td>
+          <td><span class="sbadge s-urg">緊急</span></td>
           <td><div class="ai-score score-hi"><div class="sc-bar"><div class="sc-fill" style="width:96%"></div></div><span class="sc-n">96</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2605-002</span></td>
           <td>山田エンジニアリング</td><td>アルミダイカスト部品</td><td><b>1,200</b>個</td>
           <td><span class="dl-warn">5/20 △</span></td>
-          <td><span class="sbadge s-prog">🔵 生産中</span></td>
+          <td><span class="sbadge s-prog">生産中</span></td>
           <td><div class="ai-score score-hi"><div class="sc-bar"><div class="sc-fill" style="width:87%"></div></div><span class="sc-n">87</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2605-003</span></td>
           <td>東京精機工業（株）</td><td>電子基板ユニット</td><td><b>320</b>個</td>
           <td><span class="dl-warn">5/25 △</span></td>
-          <td><span class="sbadge s-prog">🔵 生産中</span></td>
+          <td><span class="sbadge s-prog">生産中</span></td>
           <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:72%"></div></div><span class="sc-n">72</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2605-004</span></td>
           <td>中部自動車部品（株）</td><td>樹脂成形部品</td><td><b>2,500</b>個</td>
           <td><span class="dl-ok">6/10</span></td>
-          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><span class="sbadge s-plan">計画中</span></td>
           <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:65%"></div></div><span class="sc-n">65</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2605-005</span></td>
           <td>北海道機械工業</td><td>精密部品 X-200</td><td><b>480</b>個</td>
           <td><span class="dl-ok">6/15</span></td>
-          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><span class="sbadge s-plan">計画中</span></td>
           <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:58%"></div></div><span class="sc-n">58</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2605-006</span></td>
           <td>鈴木重工業（株）</td><td>アルミダイカスト部品</td><td><b>760</b>個</td>
           <td><span class="dl-ok">6/20</span></td>
-          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><span class="sbadge s-plan">計画中</span></td>
           <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:44%"></div></div><span class="sc-n">44</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2604-089</span></td>
           <td>大阪精密機器（株）</td><td>電子基板ユニット</td><td><b>890</b>個</td>
           <td><span class="dl-ok">5/30</span></td>
-          <td><span class="sbadge s-prog">🔵 生産中</span></td>
+          <td><span class="sbadge s-prog">生産中</span></td>
           <td><div class="ai-score score-md"><div class="sc-bar"><div class="sc-fill" style="width:61%"></div></div><span class="sc-n">61</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2604-078</span></td>
           <td>九州電子工業</td><td>樹脂成形部品</td><td><b>1,150</b>個</td>
           <td><span class="dl-ok">6/30</span></td>
-          <td><span class="sbadge s-plan">⬜ 計画中</span></td>
+          <td><span class="sbadge s-plan">計画中</span></td>
           <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:38%"></div></div><span class="sc-n">38</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2604-065</span></td>
           <td>横浜精工（株）</td><td>精密部品 X-200</td><td><b>300</b>個</td>
           <td><span class="dl-ok">—</span></td>
-          <td><span class="sbadge s-done">✅ 完了</span></td>
+          <td><span class="sbadge s-done">完了</span></td>
           <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:100%"></div></div><span class="sc-n" style="color:var(--green)">完了</span></div></td>
         </tr>
         <tr>
           <td><span class="oid">ORD-2604-052</span></td>
           <td>仙台テクノ工業</td><td>アルミダイカスト部品</td><td><b>640</b>個</td>
           <td><span class="dl-ok">—</span></td>
-          <td><span class="sbadge s-done">✅ 完了</span></td>
+          <td><span class="sbadge s-done">完了</span></td>
           <td><div class="ai-score score-lo"><div class="sc-bar"><div class="sc-fill" style="width:100%"></div></div><span class="sc-n" style="color:var(--green)">完了</span></div></td>
         </tr>
       </tbody>
@@ -848,38 +1185,83 @@
 
 </main>
 
-<!-- ═══ JAVASCRIPT ═════════════════════════════════════════════════════════ -->
+<!-- ═══ JAVASCRIPT ════════════════════════════════════════════════════════════ -->
 <script>
-// ── Nav ─────────────────────────────────────────────────────────────────
+// ── Theme ────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('qsch-theme', next);
+  updateChartTheme();
+}
+function initTheme() {
+  const saved = localStorage.getItem('qsch-theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', saved);
+}
+initTheme();
+
+// ── Sidebar / Mobile ─────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('show');
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+const PAGE_LABELS = {
+  dash:   'ダッシュボード',
+  fc:     'AI需要予測',
+  sched:  '生産スケジュール',
+  orders: '受注管理',
+};
+
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   el.classList.add('active');
+  document.getElementById('bc-current').textContent = PAGE_LABELS[id] || id;
   if (id === 'fc' && !fcInit) initFcChart();
+  closeSidebar();
 }
 function setFtab(el) {
   document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
 }
 
-// ── Chart defaults ───────────────────────────────────────────────────────
-Chart.defaults.color = '#64748b';
-Chart.defaults.borderColor = '#e2e8f0';
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.font.size = 11;
+// ── Chart theme helpers ───────────────────────────────────────────────────────
+function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function chartColors() {
+  return isDark()
+    ? { grid: '#30363d', label: '#8b949e', tooltip_bg: '#22272e', tooltip_border: '#444c56' }
+    : { grid: '#f1f5f9', label: '#64748b', tooltip_bg: '#0f172a', tooltip_border: '#334155' };
+}
+function makeTooltip() {
+  const c = chartColors();
+  return { backgroundColor:c.tooltip_bg, borderColor:c.tooltip_border, borderWidth:1,
+    padding:12, cornerRadius:8, titleColor:'#f1f5f9', bodyColor:'#94a3b8' };
+}
 
-const TOOLTIP = {
-  backgroundColor: '#0f172a',
-  borderColor: '#334155',
-  borderWidth: 1,
-  padding: 12,
-  cornerRadius: 8,
-  titleColor: '#f1f5f9',
-  bodyColor: '#94a3b8',
-};
+let prodChart, sumChart;
+function updateChartTheme() {
+  const c = chartColors();
+  [prodChart, sumChart, fcChart].forEach(ch => {
+    if (!ch) return;
+    ch.options.scales.x.grid.color = c.grid;
+    ch.options.scales.x.ticks.color = c.label;
+    ch.options.scales.y.grid.color = c.grid;
+    ch.options.scales.y.ticks.color = c.label;
+    ch.options.plugins.tooltip = { ...ch.options.plugins.tooltip, ...makeTooltip() };
+    ch.update('none');
+  });
+}
 
-// ── Animated counter ─────────────────────────────────────────────────────
+// ── Animated counter ─────────────────────────────────────────────────────────
 function countUp(el, to, suffix, ms) {
   const start = performance.now();
   (function tick(now) {
@@ -890,9 +1272,8 @@ function countUp(el, to, suffix, ms) {
   })(start);
 }
 
-// ── Dashboard charts ─────────────────────────────────────────────────────
+// ── Dashboard ────────────────────────────────────────────────────────────────
 function initDash() {
-  // KPI counters
   setTimeout(() => {
     countUp(document.getElementById('k1'), 82, '%', 1100);
     countUp(document.getElementById('k2'), 94, '%', 1200);
@@ -900,83 +1281,61 @@ function initDash() {
     countUp(document.getElementById('k4'), 78, '%', 1050);
   }, 300);
 
-  // Production bar
-  new Chart(document.getElementById('prodChart'), {
+  const c = chartColors();
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.font.size = 11;
+
+  prodChart = new Chart(document.getElementById('prodChart'), {
     type: 'bar',
     data: {
       labels: ['月', '火', '水', '木', '金', '本日'],
       datasets: [
-        {
-          label: '実績',
-          data: [1420, 1580, 1390, 1640, 1510, 980],
-          backgroundColor: 'rgba(37,99,235,.65)',
-          borderColor: '#2563eb',
-          borderWidth: 1,
-          borderRadius: 5,
-        },
-        {
-          label: '計画',
-          data: [1500, 1500, 1500, 1500, 1500, 1500],
-          type: 'line',
-          borderColor: 'rgba(217,119,6,.75)',
-          borderWidth: 2,
-          borderDash: [5,4],
-          pointRadius: 0,
-          fill: false,
-        }
+        { label:'実績', data:[1420,1580,1390,1640,1510,980],
+          backgroundColor:'rgba(37,99,235,.65)', borderColor:'#2563eb',
+          borderWidth:1, borderRadius:5 },
+        { label:'計画', data:[1500,1500,1500,1500,1500,1500],
+          type:'line', borderColor:'rgba(217,119,6,.75)', borderWidth:2,
+          borderDash:[5,4], pointRadius:0, fill:false }
       ]
     },
     options: {
-      responsive: true,
+      responsive:true,
       plugins: {
-        legend: { labels: { color:'#64748b', usePointStyle:true, font:{size:11} } },
-        tooltip: { ...TOOLTIP, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}個` } }
+        legend:{ labels:{ color:c.label, usePointStyle:true } },
+        tooltip:{ ...makeTooltip(), callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}個` } }
       },
       scales: {
-        x: { grid:{color:'#f1f5f9'}, ticks:{color:'#64748b'} },
-        y: { grid:{color:'#f1f5f9'}, min:0, max:2000,
-          ticks:{color:'#64748b', callback: v => (v/1000).toFixed(1)+'k'} }
+        x:{ grid:{ color:c.grid }, ticks:{ color:c.label } },
+        y:{ grid:{ color:c.grid }, min:0, max:2000,
+          ticks:{ color:c.label, callback: v => (v/1000).toFixed(1)+'k' } }
       }
     }
   });
 
-  // Summary forecast
-  new Chart(document.getElementById('sumChart'), {
+  sumChart = new Chart(document.getElementById('sumChart'), {
     type: 'line',
     data: {
-      labels: ['5/5週', '5/12週', '5/19週', '5/26週'],
+      labels: ['5/5週','5/12週','5/19週','5/26週'],
       datasets: [
-        {
-          label: 'AI需要予測',
-          data: [7200, 7850, 8420, 8100],
-          borderColor: '#0891b2',
-          borderWidth: 2.5,
-          pointBackgroundColor: '#0891b2',
-          pointRadius: 5,
-          tension: 0.4,
-          fill: { target:'origin', above:'rgba(8,145,178,.06)' }
-        },
-        {
-          label: '生産能力上限',
-          data: [8500, 8500, 8500, 8500],
-          borderColor: 'rgba(220,38,38,.5)',
-          borderWidth: 1.5,
-          borderDash: [4,4],
-          pointRadius: 0,
-          fill: false,
-        }
+        { label:'AI需要予測', data:[7200,7850,8420,8100],
+          borderColor:'#0891b2', borderWidth:2.5,
+          pointBackgroundColor:'#0891b2', pointRadius:5,
+          tension:0.4, fill:{ target:'origin', above:'rgba(8,145,178,.07)' } },
+        { label:'生産能力上限', data:[8500,8500,8500,8500],
+          borderColor:'rgba(220,38,38,.5)', borderWidth:1.5,
+          borderDash:[4,4], pointRadius:0, fill:false }
       ]
     },
     options: {
-      responsive: true,
+      responsive:true,
       plugins: {
-        legend: { labels: { color:'#64748b', usePointStyle:true, font:{size:11} } },
-        tooltip: { ...TOOLTIP, callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}個` } }
+        legend:{ labels:{ color:c.label, usePointStyle:true } },
+        tooltip:{ ...makeTooltip(), callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}個` } }
       },
       scales: {
-        x: { grid:{color:'#f1f5f9'}, ticks:{color:'#64748b'} },
-        y: { grid:{color:'#f1f5f9'}, min:5000, max:10000,
-          ticks:{color:'#64748b', callback: v => (v/1000).toFixed(1)+'k'} }
+        x:{ grid:{ color:c.grid }, ticks:{ color:c.label } },
+        y:{ grid:{ color:c.grid }, min:5000, max:10000,
+          ticks:{ color:c.label, callback: v => (v/1000).toFixed(1)+'k' } }
       }
     }
   });
@@ -988,34 +1347,26 @@ function refreshDash() {
   countUp(k1, prev + 2, '%', 700);
 }
 
-// ── Forecast chart ───────────────────────────────────────────────────────
+// ── Forecast ─────────────────────────────────────────────────────────────────
 let fcInit = false, fcChart = null;
 
 const FC_DATA = {
-  A: {
-    hist:    [1250,1180,1320,1450,1380,1520,1610,1490,1580,1720,1650,1810],
-    pred:    [null,null,null,null,null,null,null,null,null,null,null,1810,1920,2050,1980],
-    upper:   [null,null,null,null,null,null,null,null,null,null,null,1810,2080,2220,2140],
-    lower:   [null,null,null,null,null,null,null,null,null,null,null,1810,1760,1880,1820],
-  },
-  B: {
-    hist:    [980,1020,1150,1080,1200,1180,1320,1250,1400,1350,1420,1380],
-    pred:    [null,null,null,null,null,null,null,null,null,null,null,1380,1450,1520,1490],
-    upper:   [null,null,null,null,null,null,null,null,null,null,null,1380,1580,1650,1620],
-    lower:   [null,null,null,null,null,null,null,null,null,null,null,1380,1320,1390,1360],
-  },
-  C: {
-    hist:    [420,390,450,480,510,490,540,520,580,560,620,600],
-    pred:    [null,null,null,null,null,null,null,null,null,null,null,600,650,720,680],
-    upper:   [null,null,null,null,null,null,null,null,null,null,null,600,700,780,740],
-    lower:   [null,null,null,null,null,null,null,null,null,null,null,600,600,660,620],
-  },
-  D: {
-    hist:    [2100,2050,2280,2150,2400,2350,2500,2420,2600,2550,2700,2650],
-    pred:    [null,null,null,null,null,null,null,null,null,null,null,2650,2820,2950,2900],
-    upper:   [null,null,null,null,null,null,null,null,null,null,null,2650,3050,3200,3120],
-    lower:   [null,null,null,null,null,null,null,null,null,null,null,2650,2590,2700,2680],
-  }
+  A:{ hist:[1250,1180,1320,1450,1380,1520,1610,1490,1580,1720,1650,1810],
+      pred:[null,null,null,null,null,null,null,null,null,null,null,1810,1920,2050,1980],
+      upper:[null,null,null,null,null,null,null,null,null,null,null,1810,2080,2220,2140],
+      lower:[null,null,null,null,null,null,null,null,null,null,null,1810,1760,1880,1820] },
+  B:{ hist:[980,1020,1150,1080,1200,1180,1320,1250,1400,1350,1420,1380],
+      pred:[null,null,null,null,null,null,null,null,null,null,null,1380,1450,1520,1490],
+      upper:[null,null,null,null,null,null,null,null,null,null,null,1380,1580,1650,1620],
+      lower:[null,null,null,null,null,null,null,null,null,null,null,1380,1320,1390,1360] },
+  C:{ hist:[420,390,450,480,510,490,540,520,580,560,620,600],
+      pred:[null,null,null,null,null,null,null,null,null,null,null,600,650,720,680],
+      upper:[null,null,null,null,null,null,null,null,null,null,null,600,700,780,740],
+      lower:[null,null,null,null,null,null,null,null,null,null,null,600,600,660,620] },
+  D:{ hist:[2100,2050,2280,2150,2400,2350,2500,2420,2600,2550,2700,2650],
+      pred:[null,null,null,null,null,null,null,null,null,null,null,2650,2820,2950,2900],
+      upper:[null,null,null,null,null,null,null,null,null,null,null,2650,3050,3200,3120],
+      lower:[null,null,null,null,null,null,null,null,null,null,null,2650,2590,2700,2680] }
 };
 const FC_LABELS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月','1月予測','2月予測','3月予測'];
 
@@ -1029,41 +1380,41 @@ function getProdKey() {
 
 function initFcChart() {
   fcInit = true;
-  const d = FC_DATA.A;
+  const c = chartColors();
+  // Start with empty data — empty state overlay is shown until user runs AI
   fcChart = new Chart(document.getElementById('fcChart'), {
     type: 'line',
     data: {
       labels: FC_LABELS,
       datasets: [
-        { label:'上限', data:d.upper, borderColor:'transparent', backgroundColor:'rgba(37,99,235,.09)', fill:'+1', pointRadius:0, tension:.4 },
-        { label:'下限', data:d.lower, borderColor:'transparent', backgroundColor:'transparent', fill:false, pointRadius:0, tension:.4 },
-        { label:'実績', data:[...d.hist,null,null,null], borderColor:'#475569', borderWidth:2, pointBackgroundColor:'#475569', pointRadius:3, tension:.4, fill:false },
-        { label:'AI予測', data:d.pred, borderColor:'#2563eb', borderWidth:2.5, borderDash:[6,3], pointBackgroundColor:'#2563eb', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, tension:.4, fill:false }
+        { label:'上限', data:[], borderColor:'transparent',
+          backgroundColor:'rgba(37,99,235,.09)', fill:'+1', pointRadius:0, tension:.4 },
+        { label:'下限', data:[], borderColor:'transparent',
+          backgroundColor:'transparent', fill:false, pointRadius:0, tension:.4 },
+        { label:'実績', data:[], borderColor:'#475569', borderWidth:2,
+          pointBackgroundColor:'#475569', pointRadius:3, tension:.4, fill:false },
+        { label:'AI予測', data:[], borderColor:'#2563eb', borderWidth:2.5,
+          borderDash:[6,3], pointBackgroundColor:'#2563eb',
+          pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5,
+          tension:.4, fill:false }
       ]
     },
     options: {
-      responsive: true,
-      interaction: { mode:'index', intersect:false },
+      responsive:true,
+      interaction:{ mode:'index', intersect:false },
       plugins: {
-        legend: {
-          labels: { color:'#64748b', usePointStyle:true, font:{size:11},
-            filter: i => !i.text.includes('限') }
-        },
-        tooltip: {
-          ...TOOLTIP,
+        legend:{ labels:{ color:c.label, usePointStyle:true, font:{size:11},
+          filter: i => !i.text.includes('限') } },
+        tooltip:{ ...makeTooltip(),
           filter: i => i.dataset.label !== '下限',
-          callbacks: { label: c => c.parsed.y==null ? null : ` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}個` }
-        }
+          callbacks:{ label: ctx => ctx.parsed.y == null ? null : ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}個` } }
       },
       scales: {
-        x: {
-          grid:{color:'#f1f5f9'},
-          ticks: {
-            color: (c) => c.index >= 12 ? '#2563eb' : '#64748b',
-            font: (c) => c.index >= 12 ? {weight:'600'} : {}
-          }
-        },
-        y: { grid:{color:'#f1f5f9'}, ticks:{color:'#64748b', callback: v=>v.toLocaleString()+'個'} }
+        x:{ grid:{ color:c.grid },
+          ticks:{ color: ctx => ctx.index >= 12 ? '#2563eb' : c.label,
+            font: ctx => ctx.index >= 12 ? {weight:'600'} : {} } },
+        y:{ grid:{ color:c.grid },
+          ticks:{ color:c.label, callback: v => v.toLocaleString()+'個' } }
       }
     }
   });
@@ -1081,46 +1432,48 @@ function updateFcChart() {
 
 function runForecast() {
   const loading = document.getElementById('fc-loading');
-  const btn = document.getElementById('fc-btn');
+  const btn     = document.getElementById('fc-btn');
+  const empty   = document.getElementById('fc-empty');
+  if (!fcInit) initFcChart();
   loading.classList.add('show');
   btn.disabled = true;
   setTimeout(() => {
     loading.classList.remove('show');
     updateFcChart();
+    // Hide empty state overlay
+    if (empty) empty.classList.add('hidden');
     btn.disabled = false;
     const orig = btn.innerHTML;
-    btn.innerHTML = '✅ 分析完了';
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 分析完了';
     btn.style.background = 'linear-gradient(135deg,#065f46,#10b981)';
-    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2200);
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2400);
   }, 2600);
 }
 
-// ── Optimization ─────────────────────────────────────────────────────────
+// ── Schedule optimization ─────────────────────────────────────────────────────
 let optDone = false;
-
 function runOpt() {
   if (optDone) {
-    // reset
     optDone = false;
     document.getElementById('g-before').style.display = 'block';
     document.getElementById('g-after').style.display = 'none';
     document.getElementById('eff-val').textContent = '—';
-    const ea = document.getElementById('eff-after');
-    ea.classList.remove('done');
+    document.getElementById('eff-after').classList.remove('done');
     document.getElementById('eff-bar-fill').style.width = '0%';
     document.getElementById('opt-insight').textContent = '「AI最適化実行」ボタンを押すと、量子最適化アルゴリズムが製品優先度・設備能力・納期制約を同時に解析し、最適スケジュールを生成します。';
     document.getElementById('opt-insight').style.color = 'var(--text-3)';
-    document.getElementById('opt-btn').innerHTML = '⚛ AI最適化実行';
+    document.getElementById('opt-btn').innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"/><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z"/></svg> AI最適化実行';
     return;
   }
 
-  const wrap  = document.getElementById('opt-wrap');
-  const bar   = document.getElementById('opt-bar');
-  const lbl   = document.getElementById('opt-lbl');
-  const btn   = document.getElementById('opt-btn');
+  const wrap = document.getElementById('opt-wrap');
+  const bar  = document.getElementById('opt-bar');
+  const lbl  = document.getElementById('opt-lbl');
+  const btn  = document.getElementById('opt-btn');
   wrap.classList.add('show');
   btn.disabled = true;
-  btn.innerHTML = '⏳ 最適化中...';
+  btn.innerHTML = '最適化中...';
 
   const steps = [
     { p:14, t:'制約条件を解析中...' },
@@ -1131,7 +1484,6 @@ function runOpt() {
     { p:92, t:'スケジュール生成中...' },
     { p:100, t:'最適化完了！' },
   ];
-
   let i = 0;
   function step() {
     if (i >= steps.length) {
@@ -1141,14 +1493,14 @@ function runOpt() {
         document.getElementById('g-before').style.display = 'none';
         document.getElementById('g-after').style.display = 'block';
         document.getElementById('eff-val').textContent = '89%';
-        const ea = document.getElementById('eff-after');
-        ea.classList.add('done');
+        document.getElementById('eff-after').classList.add('done');
         document.getElementById('eff-bar-fill').style.width = '89%';
         document.getElementById('opt-insight').innerHTML =
-          '✅ <strong>稼働率 +21pt 改善</strong>。段取り替えを3.2時間削減、待機時間をゼロに。全受注の納期を守りながら今週の生産量を<strong>+14%</strong>向上させました。';
+          '<strong>稼働率 +21pt 改善</strong>。段取り替えを3.2時間削減、待機時間をゼロに。全受注の納期を守りながら今週の生産量を<strong>+14%</strong>向上させました。';
         document.getElementById('opt-insight').style.color = 'var(--text)';
         btn.disabled = false;
-        btn.innerHTML = '↩ リセット';
+        btn.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> リセット';
         optDone = true;
       }, 350);
       return;
@@ -1161,7 +1513,7 @@ function runOpt() {
   step();
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────
+// ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', initDash);
 </script>
 </body>
